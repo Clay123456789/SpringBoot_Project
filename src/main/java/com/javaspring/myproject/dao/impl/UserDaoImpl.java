@@ -20,10 +20,20 @@ public class UserDaoImpl implements IUserDao {
         jdbcTemplate.update("insert into user(username,password) values(?,?)",user.getUsername(),user.getPassword());
     }
 
-    public User getUser(String name){
+    public User getUser(User user){
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
-        User user = jdbcTemplate.queryForObject("select * from user where username = ?",rowMapper,name);
-        return user;
+        Object object1 = null,object2=null;
+        try {
+            object1 = jdbcTemplate.queryForObject("select * from user where username = ?",rowMapper,user.getUsername());
+        } catch (EmptyResultDataAccessException e1) {
+            try {
+                object2 = jdbcTemplate.queryForObject("select * from user where email = ?",rowMapper,user.getEmail());
+            } catch (EmptyResultDataAccessException e2) {
+                return null;
+            }
+            return (User)object2;
+        }
+       return (User)object1;
     }
     public  void  deleteUser(User user) {
         jdbcTemplate.update("delete from user where username= ? and password = ?",user.getUsername(),user.getPassword());

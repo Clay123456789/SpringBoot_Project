@@ -33,9 +33,13 @@ public class EMailServiceImpl implements IEMailService {
      * 给前端输入的邮箱，发送验证码
      */
     public boolean sendMimeMail( String email, HttpSession session) {
+
+        //该邮箱已经注册
+        if(userDao.getUser(new User(email))!=null){
+            return false;
+        }
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-
             mailMessage.setSubject("验证码邮件");//主题
             //生成随机数
             String code = randomCode();
@@ -82,7 +86,7 @@ public class EMailServiceImpl implements IEMailService {
         String voCode = userVo.getCode();
 
         //如果email数据为空，或者不一致，注册失败
-        if (email == null || email.isEmpty()){
+        if (email == null || email.isEmpty()||!email.equals(userVo.getEmail())){
             //return "error,请重新注册";
             return false;
         }else if (!code.equals(voCode)){

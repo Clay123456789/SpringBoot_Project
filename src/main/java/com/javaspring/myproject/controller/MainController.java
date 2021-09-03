@@ -40,8 +40,8 @@ public class MainController {
         return "add successfully";
     }
     @RequestMapping("/user/getUser")
-    public User getUser(String name){
-        User user = userService.getUser(name);
+    public User getUser(String email){
+        User user = userService.getUser(new User(email));
         return user;
     }
     @RequestMapping("/user/deleteUser")
@@ -80,8 +80,9 @@ public class MainController {
                 String message = String.format("登陆失败，账号/密码信息不正确。");
                 return ResultFactory.buildFailResult(message);
             }
+            user.setUsername((userService.getUser(new User(user.getEmail()))).getUsername());
         }
-        return ResultFactory.buildSuccessResult("登陆成功。");
+        return ResultFactory.buildSuccessResult("登陆成功。欢迎您，亲爱的"+user.getUsername()+"用户！");
     }
 
     /*
@@ -93,7 +94,7 @@ public class MainController {
     public Result sendEmail(@Valid @RequestBody User user ,HttpSession httpSession ) {
 
         if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
-            String message = String.format("发送邮箱失败！");
+            String message = String.format("发送失败！邮箱已注册或不可用");
             return ResultFactory.buildFailResult(message);
         }
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
@@ -105,7 +106,7 @@ public class MainController {
     public Result regist(@Valid @RequestBody UserVo userVo) {
 
         if (!EMailService.registered(userVo)) {
-            String message = String.format("注册失败！");
+            String message = String.format("注册失败！验证码不一致");
             return ResultFactory.buildFailResult(message);
         }
         return ResultFactory.buildSuccessResult("注册成功！");

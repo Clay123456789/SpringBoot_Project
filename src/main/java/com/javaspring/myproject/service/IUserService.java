@@ -4,7 +4,7 @@ import com.javaspring.myproject.beans.User;
 
 public interface IUserService {
     void addUser(User user);
-    User getUser(String name);
+    User getUser(User user);
     void deleteUser(User user);
 
     //通过用户名验证用户身份是否合法
