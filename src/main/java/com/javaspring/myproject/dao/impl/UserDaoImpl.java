@@ -58,16 +58,5 @@ public class UserDaoImpl implements IUserDao {
 
     }
 
-    @Override
-    public User queryByEmail(String email) {
-
-        RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);Object object = null;
-        try {
-            object = jdbcTemplate.queryForObject("select * from user where email = ?",rowMapper,email);
-        } catch (EmptyResultDataAccessException e) {
-            return new User();
-        }
-        return (User) object;
-    }
 }
 

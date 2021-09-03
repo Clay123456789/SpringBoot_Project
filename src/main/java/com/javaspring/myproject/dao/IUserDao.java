@@ -9,5 +9,4 @@ public interface IUserDao {
     boolean JudgeByUserName(User user);
     boolean JudgeByEMail(User user);
     void insertUser(User user);
-    User queryByEmail(String email);
 }
