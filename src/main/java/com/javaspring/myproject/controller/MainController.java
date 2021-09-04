@@ -8,16 +8,32 @@ import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.IEMailService;
 import com.javaspring.myproject.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
+
 @EnableAutoConfiguration
 @RestController
 public class MainController {
+
+
+    //绑定文件上传路径到uploadPath
+    @Value("${web.upload-path}")
+    private String uploadPath;
 
     @Autowired
     private IUserService userService;
@@ -110,6 +126,57 @@ public class MainController {
             return ResultFactory.buildFailResult(message);
         }
         return ResultFactory.buildSuccessResult("注册成功！");
+    }
+
+
+
+    /*
+    *
+    * 上传文件
+    * */
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
+
+
+    @CrossOrigin
+    @PostMapping(value ="/api/upload")
+    public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) {
+
+
+
+        // 在 uploadPath 文件夹中通过日期对上传的文件归类保存
+        // 比如：/2019/06/06/cf13891e-4b95-4000-81eb-b6d70ae44930.png
+        String format = sdf.format(new Date());
+        File folder = new File(uploadPath + username+"/"+format);
+        if (!folder.isDirectory()) {
+            folder.mkdirs();
+        }
+
+
+        String fileName = null;
+        String msg = "";
+        if (files != null && files.length >0) {
+            for(int i =0 ;i< files.length; i++){
+                try {
+                    fileName = files[i].getOriginalFilename();
+                    byte[] bytes = files[i].getBytes();
+                    BufferedOutputStream buffStream =
+                            new BufferedOutputStream(new FileOutputStream(new File(folder +"/"+ fileName)));
+                    buffStream.write(bytes);
+                    buffStream.close();
+                    // 返回上传文件的访问路径
+                    String filePath = request.getScheme() + "://" + request.getServerName()
+                            + ":" + request.getServerPort()  +"/"+ username+"/"+format + fileName;
+
+                    return "Dear "+username+",you have successfully uploaded!url: "+filePath;
+                } catch (Exception e) {
+                    return "You failed to upload " + fileName + ": " + e.getMessage();
+                }
+            }
+            return msg;
+        } else {
+            return "Unable to upload. File is empty.";
+        }
     }
 
 }
