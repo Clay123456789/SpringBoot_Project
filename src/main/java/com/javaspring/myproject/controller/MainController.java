@@ -2,10 +2,7 @@ package com.javaspring.myproject.controller;
 
 
 import com.alibaba.fastjson.JSON;
-import com.javaspring.myproject.beans.Blog;
-import com.javaspring.myproject.beans.Result;
-import com.javaspring.myproject.beans.User;
-import com.javaspring.myproject.beans.UserVo;
+import com.javaspring.myproject.beans.*;
 import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.IBlogService;
 import com.javaspring.myproject.service.IEMailService;
@@ -28,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @EnableAutoConfiguration
 @RestController
@@ -80,9 +76,9 @@ public class MainController {
             String message = String.format("登陆失败，详细信息[%s]。", bindingResult.getFieldError().getDefaultMessage());
             return ResultFactory.buildFailResult(message);
         }
-        if (!userService.JudgeByUserName(user)) {
+        if (!userService.judgeByUserName(user)) {
             user.setEmail(user.getUsername());
-            if (!userService.JudgeByEMail(user)) {
+            if (!userService.judgeByEMail(user)) {
                 String message = String.format("登陆失败，账号/密码信息不正确。");
                 return ResultFactory.buildFailResult(message);
             }
@@ -118,6 +114,29 @@ public class MainController {
         return ResultFactory.buildSuccessResult("注册成功！");
     }
 
+
+    @CrossOrigin
+    @PostMapping(value = "/api/findPassword")
+    @ResponseBody
+    public Result findPassWord(@Valid @RequestBody User user){
+        if(!EMailService.findPassword_sendEmail(user.getEmail())){
+            String message=String.format("此邮箱非您注册时使用的邮箱,找回失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("找回成功,密码已发送至您的邮箱！");
+    }
+
+
+    @CrossOrigin
+    @PostMapping(value = "/api/changePassword")
+    @ResponseBody
+    public Result fhangePassword(@Valid @RequestBody UserChangePW userChangePW){
+        if(!EMailService.changePassword(userChangePW.getEmail(),userChangePW.getOldPassword(),userChangePW.getNewPassword(),userChangePW.getNewPasswordRepeat())){
+            String message=String.format("信息有误,修改失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("修改成功,修改后密码已发送至您的邮箱，请确认！");
+    }
 
 
     /*

@@ -103,6 +103,55 @@ public class EMailServiceImpl implements IEMailService {
         //跳转成功页面
         return true;
     }
+    @Override
+    public boolean findPassword_sendEmail(String email) {
+        if(userDao.getUser(new User(email))!=null){
+            try {
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setSubject("找回密码邮件");//主题
+                //保存密码
+                String password=userDao.getUser(new User(email)).getPassword();
+                mailMessage.setText("您的密码是："+ password);
+
+                mailMessage.setTo(email);//发给谁
+
+                mailMessage.setFrom(from);//你自己的邮箱
+
+                mailSender.send(mailMessage);//发送
+                return  true;
+            }catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+        else
+            return false;
+    }
+
+    @Override
+    public boolean changePassword(String email,String oldPassword,String newPassword,String newPasswordRepeat) {
+        User tempUser=userDao.getUser(new User(email));
+        if(tempUser!=null && tempUser.getPassword().equals(oldPassword) && newPassword.equals(newPasswordRepeat)){
+            if(userDao.updatePassword(newPassword,email)>0){
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setSubject("修改密码邮件");//主题
+                //保存密码
+                String password=userDao.getUser(new User(email)).getPassword();
+                mailMessage.setText("您的新密码是："+ password);
+
+                mailMessage.setTo(email);//发给谁
+
+                mailMessage.setFrom(from);//你自己的邮箱
+
+                mailSender.send(mailMessage);//发送
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
 
 
 }

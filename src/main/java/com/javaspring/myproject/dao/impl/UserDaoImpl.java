@@ -55,7 +55,7 @@ public class UserDaoImpl implements IUserDao {
     }
 
     @Override
-    public boolean JudgeByUserName(User user) {
+    public boolean judgeByUserName(User user) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
         Object object = null;
         try {
@@ -67,7 +67,7 @@ public class UserDaoImpl implements IUserDao {
     }
 
     @Override
-    public boolean JudgeByEMail(User user) {
+    public boolean judgeByEMail(User user) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
         Object object = null;
         try {
@@ -78,6 +78,14 @@ public class UserDaoImpl implements IUserDao {
         return true;
     }
 
+
+
+    @Override
+    public int updatePassword(String password, String email) {
+        String sql="update user set password=? where email=?";
+        int result=jdbcTemplate.update(sql,password,email);
+        return result;
+    }
 
 
 }

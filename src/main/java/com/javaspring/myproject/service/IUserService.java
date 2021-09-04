@@ -10,7 +10,7 @@ public interface IUserService {
     User getUser(User user);
 
     //通过用户名验证用户身份是否合法
-    boolean JudgeByUserName(User user);
+    boolean judgeByUserName(User user);
     //通过邮箱验证用户身份是否合法
-    boolean JudgeByEMail(User user);
+    boolean judgeByEMail(User user);
 }

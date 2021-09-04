@@ -33,11 +33,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public boolean JudgeByUserName(User user) {
-        return userDao.JudgeByUserName(user);
+    public boolean judgeByUserName(User user) {
+        return userDao.judgeByUserName(user);
     }
     @Override
-    public boolean JudgeByEMail(User user) {
-        return userDao.JudgeByEMail(user);
+    public boolean judgeByEMail(User user) {
+        return userDao.judgeByEMail(user);
     }
 }

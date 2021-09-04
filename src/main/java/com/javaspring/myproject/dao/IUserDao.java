@@ -9,6 +9,7 @@ public interface IUserDao {
     void updateUser(User user);
     User getUser(User user);
     //根据Username/EMail及密码判断用户是否存在
-    boolean JudgeByUserName(User user);
-    boolean JudgeByEMail(User user);
+    boolean judgeByUserName(User user);
+    boolean judgeByEMail(User user);
+    int updatePassword(String password,String email);
 }
