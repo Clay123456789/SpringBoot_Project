@@ -6,6 +6,7 @@ import com.javaspring.myproject.beans.*;
 import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.IBlogService;
 import com.javaspring.myproject.service.IEMailService;
+import com.javaspring.myproject.service.IFileService;
 import com.javaspring.myproject.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public class MainController {
     private IEMailService EMailService;
     @Autowired
     private IBlogService blogService;
-
+    @Autowired
+    private IFileService fileService;
 
     @RequestMapping("/home")
     @ModelAttribute
@@ -115,6 +117,7 @@ public class MainController {
     }
 
 
+
     @CrossOrigin
     @PostMapping(value = "/api/findPassword")
     @ResponseBody
@@ -144,16 +147,16 @@ public class MainController {
     * 上传文件
     * */
 
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
 
     @CrossOrigin
     @PostMapping(value ="/api/upload")
-    public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) {
+    public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) throws IOException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH-mm-ss");
         Map<String,Object> map=new HashMap<>();
         // 在 uploadPath 文件夹中通过username和日期对上传的文件归类保存
-        // 比如：2019211996/2021/09/04/xxx.jpg
+        // 比如：2019211996/2021/09/04/15:23:46/xxx.jpg
         String format = sdf.format(new Date());
-        File folder = new File(uploadPath + username+"/"+format);
+        java.io.File folder = new java.io.File(uploadPath + username+"/"+format+"/");
         if (!folder.isDirectory()) {
             folder.mkdirs();
         }
@@ -163,30 +166,34 @@ public class MainController {
         String msg = "";
         if (files != null && files.length >0) {
             for(int i =0 ;i< files.length; i++){
-                try {
                     fileName = files[i].getOriginalFilename();
                     byte[] bytes = files[i].getBytes();
                     BufferedOutputStream buffStream =
-                            new BufferedOutputStream(new FileOutputStream(new File(folder +"/"+ fileName)));
+                            new BufferedOutputStream(new FileOutputStream(new java.io.File(folder +"/"+ fileName)));
                     buffStream.write(bytes);
                     buffStream.close();
-                    // 返回上传文件的访问路径
+
                     String filePath = request.getScheme() + "://" + request.getServerName()
-                            + ":" + request.getServerPort()  +"/"+ username+"/"+format + fileName;
+                            + ":" + request.getServerPort()  +"/"+ username+"/"+format +"/"+ fileName;
+                    //将文件数据写进数据库
+                    String size=fileService.getFileSize(files[i].getSize());
+
+                    File file2=new File(fileName,username,filePath,format, size);
+
+                    fileService.insertFile(file2);
+                    // 返回上传文件的访问路径
+
                     map.put("result","success");
                     map.put("url",filePath);
                     map.put("filename",fileName);
-                    return JSON.toJSONString(map);
-                } catch (Exception e) {
-                    map.put("result","fail");
+
                     return JSON.toJSONString(map);
                 }
-            }
-            return msg;
         } else {
             map.put("result","fail");
             return JSON.toJSONString(map);
         }
+        return null;
     }
 
 
@@ -203,14 +210,35 @@ public class MainController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
         String format = sdf.format(new Date());
         blog.setBlogid(format+"-"+blog.getUsername());
-        blog.setTime(format);
+        blog.setTime_(format);
         blogService.insertBlog(blog);
 
         return blog.getBlogid();
     }
 
 
+    /*
+     *
+     * 获取文件
+     *
+     *
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getFile")
+    @ResponseBody
+    public String GetFile(@Valid @RequestBody File file) {
 
+        Map<String,Object> map=new HashMap<>();
+        File file1=fileService.getFile(file);
+        map.put("filename",file1.getFilename());
+        map.put("username",file1.getUsername());
+        map.put("url",file1.getUrl());
+        map.put("date_",file1.getDate_());
+        map.put("size_",file1.getSize_());
+
+        return JSON.toJSONString(map);
+
+    }
 
     /*
      *
@@ -227,7 +255,7 @@ public class MainController {
 
         map.put("blogid",blog1.getBlogid());
         map.put("username",blog1.getUsername());
-        map.put("time",blog1.getTime());
+        map.put("time_",blog1.getTime_());
         map.put("title",blog1.getTitle());
         map.put("content",blog1.getContent());
         map.put("picture",blog1.getPicture());

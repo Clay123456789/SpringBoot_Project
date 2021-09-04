@@ -14,19 +14,12 @@ import org.springframework.stereotype.Repository;
 public class BlogDaoImpl implements IBlogDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
-/**
- *    private String blogid;
- *     private String username;
- *     private String time;
- *     private String content;
- *     private String title;
- *     private String[] picture;
- */
+
 
     @Override
     public void insertBlog(Blog blog) {
         jdbcTemplate.update("insert into blog(blogid,username,time_,content,title,picture) values(?,?,?,?,?,?)",
-                blog.getBlogid(),blog.getUsername(),blog.getTime(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()));
+                blog.getBlogid(),blog.getUsername(),blog.getTime_(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()));
 
     }
 
@@ -49,12 +42,12 @@ public class BlogDaoImpl implements IBlogDao {
     @Override
     public Blog getBlog(Blog blog) {
         RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
-        Object object1 = null;
+        Object object = null;
         try {
-            object1 = jdbcTemplate.queryForObject("select * from blog where blogid = ?",rowMapper,blog.getBlogid());
-        } catch (EmptyResultDataAccessException e1) {
+            object = jdbcTemplate.queryForObject("select * from blog where blogid = ?",rowMapper,blog.getBlogid());
+        } catch (EmptyResultDataAccessException e) {
          return null;
         }
-        return (Blog)object1;
+        return (Blog)object;
     }
 }
