@@ -10,27 +10,34 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl implements IUserService {
     @Autowired
-    private IUserDao dao;
+    private IUserDao userDao;
+
     @Override
-    public void addUser(User user) {
-        dao.addUser(user);
-    }
-    @Override
-    public User getUser(User user) {
-        return dao.getUser(user);
+    public void insertUser(User user) {
+        userDao.insertUser(user);
     }
 
     @Override
     public void deleteUser(User user) {
-        dao.deleteUser(user);
+        userDao.deleteUser(user);
+    }
+
+    @Override
+    public void updateUser(User user) {
+        userDao.updateUser(user);
+    }
+
+    @Override
+    public User getUser(User user) {
+        return userDao.getUser(user);
     }
 
     @Override
     public boolean JudgeByUserName(User user) {
-        return dao.JudgeByUserName(user);
+        return userDao.JudgeByUserName(user);
     }
     @Override
     public boolean JudgeByEMail(User user) {
-        return dao.JudgeByEMail(user);
+        return userDao.JudgeByEMail(user);
     }
 }

@@ -15,22 +15,12 @@ public class User {
         this.email = email;
     }
 
-    public User(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-    }
 
     public User(String email) {
         this.email = email;
     }
 
     public User() {
-    }
-
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
     }
 
     public void setUsername(String username) {

@@ -16,10 +16,28 @@ public class UserDaoImpl implements IUserDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public  void  addUser(User user){
-        jdbcTemplate.update("insert into user(username,password) values(?,?)",user.getUsername(),user.getPassword());
+    @Override
+    public void insertUser(User user) {
+        jdbcTemplate.update("insert into user(username,password,email) values(?,?,?)",user.getUsername(),user.getPassword(),user.getEmail());
+
     }
 
+    @Override
+    public  void  deleteUser(User user) {
+        jdbcTemplate.update("delete from user where username= ? and password = ?",user.getUsername(),user.getPassword());
+    }
+
+    @Override
+    public void updateUser(User user) {
+        /*
+         * 待实现
+         *
+         *
+         *
+         * */
+    }
+
+    @Override
     public User getUser(User user){
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
         Object object1 = null,object2=null;
@@ -35,9 +53,6 @@ public class UserDaoImpl implements IUserDao {
         }
        return (User)object1;
     }
-    public  void  deleteUser(User user) {
-        jdbcTemplate.update("delete from user where username= ? and password = ?",user.getUsername(),user.getPassword());
-    }
 
     @Override
     public boolean JudgeByUserName(User user) {
@@ -50,6 +65,7 @@ public class UserDaoImpl implements IUserDao {
         }
             return true;
     }
+
     @Override
     public boolean JudgeByEMail(User user) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
@@ -62,11 +78,7 @@ public class UserDaoImpl implements IUserDao {
         return true;
     }
 
-    @Override
-    public void insertUser(User user) {
-        jdbcTemplate.update("insert into user(username,password,email) values(?,?,?)",user.getUsername(),user.getPassword(),user.getEmail());
 
-    }
 
 }
 

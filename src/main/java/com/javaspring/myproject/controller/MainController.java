@@ -1,10 +1,13 @@
 package com.javaspring.myproject.controller;
 
 
+import com.alibaba.fastjson.JSON;
+import com.javaspring.myproject.beans.Blog;
 import com.javaspring.myproject.beans.Result;
 import com.javaspring.myproject.beans.User;
 import com.javaspring.myproject.beans.UserVo;
 import com.javaspring.myproject.dao.impl.ResultFactory;
+import com.javaspring.myproject.service.IBlogService;
 import com.javaspring.myproject.service.IEMailService;
 import com.javaspring.myproject.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +24,10 @@ import javax.validation.Valid;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @EnableAutoConfiguration
@@ -39,6 +43,9 @@ public class MainController {
     private IUserService userService;
     @Autowired
     private IEMailService EMailService;
+    @Autowired
+    private IBlogService blogService;
+
 
     @RequestMapping("/home")
     @ModelAttribute
@@ -49,23 +56,6 @@ public class MainController {
         return "home";
     }
 
-    @RequestMapping("/user/addUser")
-    public String addUser(String name,String password){
-        User user = new User(name,password);
-        userService.addUser(user);
-        return "add successfully";
-    }
-    @RequestMapping("/user/getUser")
-    public User getUser(String email){
-        User user = userService.getUser(new User(email));
-        return user;
-    }
-    @RequestMapping("/user/deleteUser")
-    public String deleteUser(String name,String password){
-        User user = new User(name,password);
-        userService.deleteUser(user);
-        return "delete successfully";
-    }
     @RequestMapping("/login")
     @ModelAttribute
     public String login() {
@@ -137,15 +127,12 @@ public class MainController {
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
 
-
     @CrossOrigin
     @PostMapping(value ="/api/upload")
     public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) {
-
-
-
-        // 在 uploadPath 文件夹中通过日期对上传的文件归类保存
-        // 比如：/2019/06/06/cf13891e-4b95-4000-81eb-b6d70ae44930.png
+        Map<String,Object> map=new HashMap<>();
+        // 在 uploadPath 文件夹中通过username和日期对上传的文件归类保存
+        // 比如：2019211996/2021/09/04/xxx.jpg
         String format = sdf.format(new Date());
         File folder = new File(uploadPath + username+"/"+format);
         if (!folder.isDirectory()) {
@@ -167,16 +154,66 @@ public class MainController {
                     // 返回上传文件的访问路径
                     String filePath = request.getScheme() + "://" + request.getServerName()
                             + ":" + request.getServerPort()  +"/"+ username+"/"+format + fileName;
-
-                    return "Dear "+username+",you have successfully uploaded!url: "+filePath;
+                    map.put("result","success");
+                    map.put("url",filePath);
+                    map.put("filename",fileName);
+                    return JSON.toJSONString(map);
                 } catch (Exception e) {
-                    return "You failed to upload " + fileName + ": " + e.getMessage();
+                    map.put("result","fail");
+                    return JSON.toJSONString(map);
                 }
             }
             return msg;
         } else {
-            return "Unable to upload. File is empty.";
+            map.put("result","fail");
+            return JSON.toJSONString(map);
         }
     }
+
+
+    /*
+    *
+    * 上传blog
+    *
+    *
+    * */
+    @CrossOrigin
+    @PostMapping(value ="/api/blogUpload")
+    @ResponseBody
+    public String blogUpload(@Valid @RequestBody Blog blog) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
+        String format = sdf.format(new Date());
+        blog.setBlogid(format+"-"+blog.getUsername());
+        blog.setTime(format);
+        blogService.insertBlog(blog);
+
+        return blog.getBlogid();
+    }
+
+
+
+
+    /*
+     *
+     * 获取blog
+     *
+     *
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getBlog")
+    @ResponseBody
+    public String GetBlog(@Valid @RequestBody Blog blog) {
+        Blog blog1=blogService.getBlog(blog);
+        Map<String,Object> map=new HashMap<>();
+
+        map.put("blogid",blog1.getBlogid());
+        map.put("username",blog1.getUsername());
+        map.put("time",blog1.getTime());
+        map.put("title",blog1.getTitle());
+        map.put("content",blog1.getContent());
+        map.put("picture",blog1.getPicture());
+        return JSON.toJSONString(map);
+    }
+
 
 }
