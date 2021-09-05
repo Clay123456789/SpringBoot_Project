@@ -11,4 +11,6 @@ public interface IBlogService {
     void updateBlog (Blog blog);
     Blog getBlog (Blog blog);
     List<Blog> getAllBlogs(Blog blog);
+    List<Blog> getPublicBlogs();
+
 }

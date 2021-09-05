@@ -3,7 +3,6 @@ package com.javaspring.myproject.dao.impl;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.Blog;
 import com.javaspring.myproject.dao.IBlogDao;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -11,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -22,8 +20,8 @@ public class BlogDaoImpl implements IBlogDao {
 
     @Override
     public void insertBlog(Blog blog) {
-        jdbcTemplate.update("insert into blog(blogid,username,time_,content,title,picture) values(?,?,?,?,?,?)",
-                blog.getBlogid(),blog.getUsername(),blog.getTime_(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()));
+        jdbcTemplate.update("insert into blog(blogid,username,time_,content,title,picture,visible) values(?,?,?,?,?,?,?)",
+                blog.getBlogid(),blog.getUsername(),blog.getTime_(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()),blog.getVisible());
 
     }
 
@@ -60,6 +58,14 @@ public class BlogDaoImpl implements IBlogDao {
 
         RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
         List<Blog> blogList = jdbcTemplate.query("select * from blog where username = ? order by time_ DESC ",rowMapper,blog.getUsername());
+
+        return blogList;
+    }
+
+    @Override
+    public List<Blog> getPublicBlogs() {
+        RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
+        List<Blog> blogList = jdbcTemplate.query("select * from blog where visible = '1' order by time_ DESC ",rowMapper);
 
         return blogList;
     }

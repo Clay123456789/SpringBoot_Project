@@ -83,7 +83,7 @@ url=http://IP:8008/xxx</br>
 /*</br>
 * 上传blog</br>
 * 路径 /api/blogUpload</br>
-* 传参(json) username,content,title,picture</br>
+* 传参(json) username,content,title,picture,visibale</br>
 * 返回值(string) blogid</br>
 * */</br>
 </br>
@@ -92,7 +92,7 @@ url=http://IP:8008/xxx</br>
 * 获取blog</br>
 * 路径 /api/getBlog</br>
 * 传参(json) blogid</br>
-* 返回值(json) blogid,username,time_,title,content,picture</br>
+* 返回值(json) blogid,username,time_,title,content,picture,visibale</br>
 * */</br>
 </br>
 </br>
@@ -101,9 +101,15 @@ url=http://IP:8008/xxx</br>
 * 获取blogs</br>
 * 路径 /api/getAllBlogs</br>
 * 传参(json) username</br>
-* 返回值(json) blogid,username,time_,title,content,picture</br>
+* 返回值(json) blogid,username,time_,title,content,picture,visibale</br>
 * */</br>
 </br>
 </br>
+/*</br>
+* 获取公开的所有人blogs</br>
+* 路径 /api/getPublicBlogs</br>
+* 传参   null</br>
+* 返回值(json) blogid,username,time_,title,content,picture</br>
+* */</br>
 </body>
 </html>

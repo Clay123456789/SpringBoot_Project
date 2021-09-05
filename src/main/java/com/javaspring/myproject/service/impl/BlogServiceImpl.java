@@ -36,4 +36,9 @@ public class BlogServiceImpl implements IBlogService {
     public List<Blog> getAllBlogs(Blog blog) {
         return blogDao.getAllBlogs(blog);
     }
+
+    @Override
+    public List<Blog> getPublicBlogs() {
+        return blogDao.getPublicBlogs();
+    }
 }

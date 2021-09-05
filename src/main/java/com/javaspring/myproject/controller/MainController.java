@@ -4,10 +4,7 @@ package com.javaspring.myproject.controller;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
 import com.javaspring.myproject.dao.impl.ResultFactory;
-import com.javaspring.myproject.service.IBlogService;
-import com.javaspring.myproject.service.IEMailService;
-import com.javaspring.myproject.service.IFileService;
-import com.javaspring.myproject.service.IUserService;
+import com.javaspring.myproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -327,7 +324,7 @@ public class MainController {
     /*
      * 上传blog
      * 路径 /api/blogUpload
-     * 传参(json) username,content,title,picture
+     * 传参(json) username,content,title,picture,visible
      * 返回值(string) blogid
      * */
     @CrossOrigin
@@ -347,7 +344,7 @@ public class MainController {
      * 获取blog
      * 路径 /api/getBlog
      * 传参(json) blogid
-     * 返回值(json) blogid,username,time_,title,content,picture
+     * 返回值(json) blogid,username,time_,title,content,picture,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getBlog")
@@ -362,6 +359,7 @@ public class MainController {
         map.put("title",blog1.getTitle());
         map.put("content",blog1.getContent());
         map.put("picture",blog1.getPicture());
+        map.put("visible",blog1.getVisible());
         return JSON.toJSONString(map);
     }
 
@@ -370,13 +368,42 @@ public class MainController {
      * 获取blogs
      * 路径 /api/getAllBlogs
      * 传参(json) username
-     * 返回值(json) blogid,username,time_,title,content,picture
+     * 返回值(json) blogid,username,time_,title,content,picture,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getAllBlogs")
     @ResponseBody
     public String getAllBlogs(@Valid @RequestBody Blog blog) {
         List<Blog> bloglist=blogService.getAllBlogs(blog);
+        List<Map<String,Object>> maplist=new ArrayList<>();
+        for (int i = 0; i < bloglist.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
+
+            map.put("blogid",bloglist.get(i).getBlogid());
+            map.put("username",bloglist.get(i).getUsername());
+            map.put("time_",bloglist.get(i).getTime_());
+            map.put("title",bloglist.get(i).getTitle());
+            map.put("content",bloglist.get(i).getContent());
+            map.put("picture",bloglist.get(i).getPicture());
+            map.put("visiable",bloglist.get(i).getVisible());
+            maplist.add(map);
+        }
+
+        return JSON.toJSONString(maplist);
+    }
+
+
+    /*
+     * 获取公开的所有人blogs
+     * 路径 /api/getPublicBlogs
+     * 传参   null
+     * 返回值(json) blogid,username,time_,title,content,picture
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getPublicBlogs")
+    @ResponseBody
+    public String getPublicBlogs() {
+        List<Blog> bloglist=blogService.getPublicBlogs();
         List<Map<String,Object>> maplist=new ArrayList<>();
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
@@ -412,5 +439,7 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改用户名！");
     }
+
+
 
 }
