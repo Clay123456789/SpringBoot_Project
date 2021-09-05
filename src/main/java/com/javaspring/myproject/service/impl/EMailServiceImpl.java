@@ -153,5 +153,43 @@ public class EMailServiceImpl implements IEMailService {
             return false;
     }
 
+    @Override
+    public boolean updateEmail(UserVo userVo) {
+        //获取调用前最新的验证码
+        String code = (String) httpSession.getAttribute("code");
 
+        //获取表单中的提交的验证码
+        String voCode = userVo.getCode();
+        //验证码正确
+        if(code.equals(voCode))
+        {
+            User user = UserVoToUser.toUser(userVo);
+            return userDao.updateEmail(user,userVo.getNewEmail());
+        }
+        //验证码错误
+        else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateUserName(UserVo userVo) {
+        //获取调用前最新的验证码
+        String code = (String) httpSession.getAttribute("code");
+
+        //获取表单中的提交的验证码
+        String voCode = userVo.getCode();
+        //验证码正确
+        if(code.equals(voCode))
+        {
+            User user = UserVoToUser.toUser(userVo);
+            return userDao.updateUserName(user,userVo.getNewUserName());
+        }
+        //验证码错误
+        else
+        {
+            return false;
+        }
+    }
 }

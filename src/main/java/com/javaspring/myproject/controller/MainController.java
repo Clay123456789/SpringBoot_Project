@@ -110,7 +110,25 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
     }
 
-
+    //同上，但专用于修改信息时进行安全验证
+    @CrossOrigin
+    @PostMapping(value = "/api/sendVerificationEmail")
+    @ResponseBody
+    public Result sendVerificationEmail(@Valid @RequestBody String email,HttpSession httpSession) {
+        //邮箱是唯一的，故通过当前邮箱确认待修改对象是否存在
+        User user = userService.getUserByEmail(email);
+        if(user==null)
+        {
+            return ResultFactory.buildFailResult("该邮箱未注册! ");
+        }
+        else {
+            if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
+                String message = String.format("发送邮箱失败！");
+                return ResultFactory.buildFailResult(message);
+            }
+            return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
+        }
+    }
     /*
      * 注册新用户
      * 路径 /api/regist
@@ -374,6 +392,25 @@ public class MainController {
 
         return JSON.toJSONString(maplist);
     }
-
+    @CrossOrigin
+    @PostMapping(value = "/api/updateEmail")
+    @ResponseBody
+    public Result updateUserEmail(@Valid @RequestBody UserVo userVo) {
+        if (!EMailService.updateEmail(userVo)) {
+            String message = String.format("更改用户邮箱失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
+    }
+    @CrossOrigin
+    @PostMapping(value = "/api/updateUserName")
+    @ResponseBody
+    public Result updateUserName(@Valid @RequestBody UserVo userVo) {
+        if (!EMailService.updateUserName(userVo)) {
+            String message = String.format("更改用户名失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改用户名！");
+    }
 
 }
