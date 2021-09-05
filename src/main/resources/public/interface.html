@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>interface</title>
+</head>
+<body>
+以下为目前后端接口信息，均为post请求接口</br>
+IP=10.128.214.119</br>
+url=http://IP:8008/xxx</br>
+/*</br>
+* 登陆</br>
+* 路径 /api/login</br>
+* 传参(json) username,password</br>
+* 返回值(json--Result) code,message,data</br>
+* */</br>
+</br>
+/*</br>
+* 发送注册邮箱</br>
+* 路径 /api/sendEmail</br>
+* 传参(json) email</br>
+* 返回值(json--Result) code,message,data</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 注册新用户</br>
+* 路径 /api/regist</br>
+* 传参(json) username,password,email,code</br>
+* 返回值(json--Result) code,message,data</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 找回密码</br>
+* 路径 /api/findPassword</br>
+* 传参(json) email</br>
+* 返回值(json--Result) code,message,data</br>
+* */</br>
+</br>
+</br>
+</br>
+/*</br>
+* 修改用户密码</br>
+* 路径 /api/changePassword</br>
+* 传参(json) email,oldPassword,newPassword,newPasswordRepeat</br>
+* 返回值(json--Result) code,message,data</br>
+* */</br>
+</br>
+</br>
+</br>
+/*</br>
+* 上传file</br>
+* 路径 /api/upload</br>
+* 传参(MultipartFile) file,username</br>
+* 返回值(json) result{"success","fail"},url,filename</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 获取file</br>
+* 路径 /api/getFile</br>
+* 传参(json) username,filename,date_</br>
+* 返回值(json) filename,username,url,date_,size_</br>
+* */</br>
+</br>
+/*</br>
+* 获取files</br>
+* 路径 /api/getAllFiles</br>
+* 传参(json) username</br>
+* 返回值(json--数组) filename,username,url,date_,size_</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 删除file</br>
+* 路径 /api/deleteFile</br>
+* 传参(json) username,filename,date_</br>
+* 返回值(String) result{"success","fail"}</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 上传blog</br>
+* 路径 /api/blogUpload</br>
+* 传参(json) username,content,title,picture</br>
+* 返回值(string) blogid</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 获取blog</br>
+* 路径 /api/getBlog</br>
+* 传参(json) blogid</br>
+* 返回值(json) blogid,username,time_,title,content,picture</br>
+* */</br>
+</br>
+</br>
+</br>
+/*</br>
+* 获取blogs</br>
+* 路径 /api/getAllBlogs</br>
+* 传参(json) username</br>
+* 返回值(json) blogid,username,time_,title,content,picture</br>
+* */</br>
+</br>
+</br>
+</body>
+</html>

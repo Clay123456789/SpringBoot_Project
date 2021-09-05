@@ -23,9 +23,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @EnableAutoConfiguration
 @RestController
@@ -45,6 +43,8 @@ public class MainController {
     @Autowired
     private IFileService fileService;
 
+    //测试接口--home
+
     @RequestMapping("/home")
     @ModelAttribute
     public String home(String username,String password,Model model){
@@ -54,18 +54,19 @@ public class MainController {
         return "home";
     }
 
+    //测试接口--login
     @RequestMapping("/login")
     @ModelAttribute
     public String login() {
         return "login";
     }
 
-    /**
-     * 登录控制器，前后端分离用的不同协议和端口，所以需要加入@CrossOrigin支持跨域。
-     * 给VueLoginInfoVo对象加入@Valid注解，并在参数中加入BindingResult来获取错误信息。
-     * 在逻辑处理中我们判断BindingResult知否含有错误信息，如果有错误信息，则直接返回错误信息。
-     */
-
+    /*
+     * 登陆
+     * 路径 /api/login
+     * 传参(json) username,password
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @RequestMapping(value = "/api/login", method = RequestMethod.POST, produces = "application/json; charset=UTF-8")
     @ResponseBody
@@ -90,13 +91,18 @@ public class MainController {
     }
 
     /*
-    * 使用HttpSession在服务器与浏览器建立对话，以验证邮箱验证码
-    * */
+     * 发送注册邮箱
+     * 路径 /api/sendEmail
+     * 传参(json) email
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/sendEmail")
     @ResponseBody
     public Result sendEmail(@Valid @RequestBody User user ,HttpSession httpSession ) {
-
+        /*
+         * 使用HttpSession在服务器与浏览器建立对话，以验证邮箱验证码
+         * */
         if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
             String message = String.format("发送失败！邮箱已注册或不可用");
             return ResultFactory.buildFailResult(message);
@@ -104,6 +110,13 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
     }
 
+
+    /*
+     * 注册新用户
+     * 路径 /api/regist
+     * 传参(json) username,password,email,code
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/regist")
     @ResponseBody
@@ -118,6 +131,12 @@ public class MainController {
 
 
 
+    /*
+     * 找回密码
+     * 路径 /api/findPassword
+     * 传参(json) email
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/findPassword")
     @ResponseBody
@@ -130,6 +149,12 @@ public class MainController {
     }
 
 
+    /*
+     * 修改用户密码
+     * 路径 /api/changePassword
+     * 传参(json) email,oldPassword,newPassword,newPasswordRepeat
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/changePassword")
     @ResponseBody
@@ -142,20 +167,24 @@ public class MainController {
     }
 
 
+
     /*
-    *
-    * 上传文件
-    * */
-
-
+     * 上传file
+     * 路径 /api/upload
+     * 传参(MultipartFile) file,username
+     * 返回值(json) result{"success","fail"},url,filename
+     * */
     @CrossOrigin
     @PostMapping(value ="/api/upload")
     public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH-mm-ss");
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
+
         Map<String,Object> map=new HashMap<>();
         // 在 uploadPath 文件夹中通过username和日期对上传的文件归类保存
         // 比如：2019211996/2021/09/04/15:23:46/xxx.jpg
         String format = sdf.format(new Date());
+        String date_ = sdf1.format(new Date());
         java.io.File folder = new java.io.File(uploadPath + username+"/"+format+"/");
         if (!folder.isDirectory()) {
             folder.mkdirs();
@@ -178,7 +207,7 @@ public class MainController {
                     //将文件数据写进数据库
                     String size=fileService.getFileSize(files[i].getSize());
 
-                    File file2=new File(fileName,username,filePath,format, size);
+                    File file2=new File(fileName,username,filePath,date_, size);
 
                     fileService.insertFile(file2);
                     // 返回上传文件的访问路径
@@ -189,44 +218,25 @@ public class MainController {
 
                     return JSON.toJSONString(map);
                 }
-        } else {
+        }
             map.put("result","fail");
             return JSON.toJSONString(map);
-        }
-        return null;
     }
 
 
-    /*
-    *
-    * 上传blog
-    *
-    *
-    * */
-    @CrossOrigin
-    @PostMapping(value ="/api/blogUpload")
-    @ResponseBody
-    public String blogUpload(@Valid @RequestBody Blog blog) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
-        String format = sdf.format(new Date());
-        blog.setBlogid(format+"-"+blog.getUsername());
-        blog.setTime_(format);
-        blogService.insertBlog(blog);
 
-        return blog.getBlogid();
-    }
 
 
     /*
-     *
-     * 获取文件
-     *
-     *
+     * 获取file
+     * 路径 /api/getFile
+     * 传参(json) username,filename,date_
+     * 返回值(json) filename,username,url,date_,size_
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getFile")
     @ResponseBody
-    public String GetFile(@Valid @RequestBody File file) {
+    public String getFile(@Valid @RequestBody File file) {
 
         Map<String,Object> map=new HashMap<>();
         File file1=fileService.getFile(file);
@@ -240,16 +250,91 @@ public class MainController {
 
     }
 
+
+
     /*
-     *
+     * 获取files
+     * 路径 /api/getAllFiles
+     * 传参(json) username
+     * 返回值(json--数组) filename,username,url,date_,size_
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getAllFiles")
+    @ResponseBody
+    public String getAllFiles(@Valid @RequestBody File file) {
+        List<File> fileList=fileService.getAllFiles(file);
+        List<Map<String,Object>> maplist=new ArrayList<>();
+        for (int i = 0; i < fileList.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
+            map.put("filename",fileList.get(i).getFilename());
+            map.put("username",fileList.get(i).getUsername());
+            map.put("url",fileList.get(i).getUrl());
+            map.put("date_",fileList.get(i).getDate_());
+            map.put("size_",fileList.get(i).getSize_());
+            maplist.add(map);
+        }
+
+        return JSON.toJSONString(maplist);
+    }
+
+
+
+    /*
+     * 删除file
+     * 路径 /api/deleteFile
+     * 传参(json) username,filename,date_
+     * 返回值(String) result{"success","fail"}
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/deleteFile")
+    @ResponseBody
+    public String deleteFile(@Valid @RequestBody File file) {
+        Map<String,Object> map=new HashMap<>();
+        if(fileService.deleteFile(file)){
+            map.put("result","success");
+        }else{
+
+            map.put("result","fail");
+        }
+
+
+    return JSON.toJSONString(map);
+
+    }
+
+
+
+
+
+    /*
+     * 上传blog
+     * 路径 /api/blogUpload
+     * 传参(json) username,content,title,picture
+     * 返回值(string) blogid
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/blogUpload")
+    @ResponseBody
+    public String blogUpload(@Valid @RequestBody Blog blog) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
+        String format = sdf.format(new Date());
+        blog.setBlogid(format+"-"+blog.getUsername());
+        blog.setTime_(format);
+        blogService.insertBlog(blog);
+
+        return blog.getBlogid();
+    }
+
+   /*
      * 获取blog
-     *
-     *
+     * 路径 /api/getBlog
+     * 传参(json) blogid
+     * 返回值(json) blogid,username,time_,title,content,picture
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getBlog")
     @ResponseBody
-    public String GetBlog(@Valid @RequestBody Blog blog) {
+    public String getBlog(@Valid @RequestBody Blog blog) {
         Blog blog1=blogService.getBlog(blog);
         Map<String,Object> map=new HashMap<>();
 
@@ -260,6 +345,34 @@ public class MainController {
         map.put("content",blog1.getContent());
         map.put("picture",blog1.getPicture());
         return JSON.toJSONString(map);
+    }
+
+
+    /*
+     * 获取blogs
+     * 路径 /api/getAllBlogs
+     * 传参(json) username
+     * 返回值(json) blogid,username,time_,title,content,picture
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getAllBlogs")
+    @ResponseBody
+    public String getAllBlogs(@Valid @RequestBody Blog blog) {
+        List<Blog> bloglist=blogService.getAllBlogs(blog);
+        List<Map<String,Object>> maplist=new ArrayList<>();
+        for (int i = 0; i < bloglist.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
+
+            map.put("blogid",bloglist.get(i).getBlogid());
+            map.put("username",bloglist.get(i).getUsername());
+            map.put("time_",bloglist.get(i).getTime_());
+            map.put("title",bloglist.get(i).getTitle());
+            map.put("content",bloglist.get(i).getContent());
+            map.put("picture",bloglist.get(i).getPicture());
+            maplist.add(map);
+        }
+
+        return JSON.toJSONString(maplist);
     }
 
 

@@ -8,7 +8,9 @@ public interface IFileDao {
 
     //增删改查方法
     void insertFile(File file);
-    void  deleteFile(File file);
+    boolean  deleteFile(File file);
     void updateFile(File file);
     File getFile(File file);
+
+    List<File> getAllFiles(File file);
 }

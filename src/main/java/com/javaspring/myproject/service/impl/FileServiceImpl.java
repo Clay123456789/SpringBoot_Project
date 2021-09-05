@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 @Service
 public class FileServiceImpl implements IFileService {
@@ -19,8 +20,8 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public void deleteFile(File file) {
-        fileDao.deleteFile(file);
+    public boolean deleteFile(File file) {
+       return  fileDao.deleteFile(file);
     }
 
     @Override
@@ -59,5 +60,10 @@ public class FileServiceImpl implements IFileService {
             }
             return bytes.toString();
 
+    }
+
+    @Override
+    public List<File> getAllFiles(File file) {
+        return fileDao.getAllFiles(file);
     }
 }

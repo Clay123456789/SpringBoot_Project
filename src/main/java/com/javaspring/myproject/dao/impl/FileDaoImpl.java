@@ -3,11 +3,14 @@ package com.javaspring.myproject.dao.impl;
 import com.javaspring.myproject.beans.File;
 import com.javaspring.myproject.dao.IFileDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class FileDaoImpl implements IFileDao {
@@ -21,10 +24,16 @@ public class FileDaoImpl implements IFileDao {
     }
 
     @Override
-    public void deleteFile(File file) {
-        jdbcTemplate.update("delete from file where filename= ? and username = ? and date_ =?",
-                file.getFilename(),file.getUsername(),file.getDate_());
+    public boolean deleteFile(File file) {
 
+          int  number=  jdbcTemplate.update("delete from file where filename= ? and username = ? and date_ =?",
+                    file.getFilename(),file.getUsername(),file.getDate_());
+          if(number!=0){
+              return true;
+          }
+          else{
+              return false;
+          }
     }
 
     @Override
@@ -49,5 +58,13 @@ public class FileDaoImpl implements IFileDao {
             return null;
         }
         return (File)object;
+    }
+
+    @Override
+    public List<File> getAllFiles(File file) {
+        RowMapper<File> rowMapper = new BeanPropertyRowMapper<File>(File.class);
+        List<File> fileList = jdbcTemplate.query("select * from file where username = ? order by date_ DESC ",rowMapper,file.getUsername());
+
+        return fileList;
     }
 }

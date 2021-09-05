@@ -6,6 +6,8 @@ import com.javaspring.myproject.service.IBlogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class BlogServiceImpl implements IBlogService {
     @Autowired
@@ -28,5 +30,10 @@ public class BlogServiceImpl implements IBlogService {
     @Override
     public Blog getBlog(Blog blog) {
         return blogDao.getBlog(blog);
+    }
+
+    @Override
+    public List<Blog> getAllBlogs(Blog blog) {
+        return blogDao.getAllBlogs(blog);
     }
 }
