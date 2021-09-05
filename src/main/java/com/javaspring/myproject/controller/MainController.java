@@ -306,7 +306,7 @@ public class MainController {
     /*
      * 上传blog
      * 路径 /api/blogUpload
-     * 传参(json) username,content,title,picture,visiable
+     * 传参(json) username,content,title,picture,visible
      * 返回值(string) blogid
      * */
     @CrossOrigin
@@ -326,7 +326,7 @@ public class MainController {
      * 获取blog
      * 路径 /api/getBlog
      * 传参(json) blogid
-     * 返回值(json) blogid,username,time_,title,content,picture,visialbe
+     * 返回值(json) blogid,username,time_,title,content,picture,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getBlog")
@@ -341,7 +341,7 @@ public class MainController {
         map.put("title",blog1.getTitle());
         map.put("content",blog1.getContent());
         map.put("picture",blog1.getPicture());
-        map.put("visiable",blog1.getVisiable());
+        map.put("visible",blog1.getVisible());
         return JSON.toJSONString(map);
     }
 
@@ -350,7 +350,7 @@ public class MainController {
      * 获取blogs
      * 路径 /api/getAllBlogs
      * 传参(json) username
-     * 返回值(json) blogid,username,time_,title,content,picture,visiable
+     * 返回值(json) blogid,username,time_,title,content,picture,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getAllBlogs")
@@ -367,7 +367,7 @@ public class MainController {
             map.put("title",bloglist.get(i).getTitle());
             map.put("content",bloglist.get(i).getContent());
             map.put("picture",bloglist.get(i).getPicture());
-            map.put("visiable",bloglist.get(i).getVisiable());
+            map.put("visiable",bloglist.get(i).getVisible());
             maplist.add(map);
         }
 
