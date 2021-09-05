@@ -9,17 +9,21 @@ public class Blog {
     private String content;
     private String title;
     private String[] picture;
+    private String visiable;
+
+
 
     public Blog() {
     }
 
-    public Blog(String blogid, String username, String time, String title, String content, String[] picture) {
+    public Blog(String blogid, String username, String time, String title, String content, String[] picture,String visiable) {
         this.blogid = blogid;
         this.username = username;
         this.time_ = time;
         this.content = content;
         this.title = title;
         this.picture = picture;
+        this.visiable = visiable;
     }
     public String getBlogid() {
         return blogid;
@@ -45,6 +49,13 @@ public class Blog {
         return picture;
     }
 
+    public String getVisiable() {
+        return visiable;
+    }
+
+    public void setVisiable(String visiable) {
+        this.visiable = visiable;
+    }
     public void setBlogid(String blogid) {
         this.blogid = blogid;
     }

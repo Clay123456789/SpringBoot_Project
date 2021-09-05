@@ -22,8 +22,8 @@ public class BlogDaoImpl implements IBlogDao {
 
     @Override
     public void insertBlog(Blog blog) {
-        jdbcTemplate.update("insert into blog(blogid,username,time_,content,title,picture) values(?,?,?,?,?,?)",
-                blog.getBlogid(),blog.getUsername(),blog.getTime_(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()));
+        jdbcTemplate.update("insert into blog(blogid,username,time_,content,title,picture,visiable) values(?,?,?,?,?,?,?)",
+                blog.getBlogid(),blog.getUsername(),blog.getTime_(),blog.getContent(),blog.getTitle(), JSON.toJSONString(blog.getPicture()),blog.getVisiable());
 
     }
 
@@ -60,6 +60,14 @@ public class BlogDaoImpl implements IBlogDao {
 
         RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
         List<Blog> blogList = jdbcTemplate.query("select * from blog where username = ? order by time_ DESC ",rowMapper,blog.getUsername());
+
+        return blogList;
+    }
+
+    @Override
+    public List<Blog> getPublicBlogs() {
+        RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
+        List<Blog> blogList = jdbcTemplate.query("select * from blog where visiable = '1' order by time_ DESC ",rowMapper);
 
         return blogList;
     }
