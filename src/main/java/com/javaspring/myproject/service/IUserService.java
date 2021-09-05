@@ -8,7 +8,7 @@ public interface IUserService {
     void deleteUser(User user);
     void updateUser(User user);
     User getUser(User user);
-
+    User getUserByEmail(String email);
     //通过用户名验证用户身份是否合法
     boolean judgeByUserName(User user);
     //通过邮箱验证用户身份是否合法
