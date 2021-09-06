@@ -1,18 +1,17 @@
 package com.javaspring.myproject.beans;
 
-//邮箱注册时新用户
+//专用于接受表单提交的user对象，包含各种接口需要的专用属性
 public class UserVo {
     private String username;
-
     private String password;
-
     private String email;
     //    验证码
     private String code;
     //新信息
     private String newUserName;
-
     private String newEmail;
+    private String newPassword;
+    private String newPasswordRepeat;
     public UserVo() {
     }
 
@@ -37,6 +36,10 @@ public class UserVo {
     public String getCode() {
         return code;
     }
+
+    public String getNewPassword(){ return newPassword;}
+
+    public String getNewPasswordRepeat(){ return newPasswordRepeat;}
 
     public void setUsername(String username) {
         this.username = username;
@@ -70,4 +73,9 @@ public class UserVo {
     {
         return this.newEmail;
     }
+
+    public void setNewPassword(String newPassword){ this.newPassword=newPassword;}
+
+    public void setNewPasswordRepeat(String newPasswordRepeat){ this.newPasswordRepeat=newPasswordRepeat;}
+
 }

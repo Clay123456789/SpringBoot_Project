@@ -4,11 +4,14 @@ package com.javaspring.myproject.dao.impl;
 import com.javaspring.myproject.beans.User;
 import com.javaspring.myproject.dao.IUserDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import java.sql.SQLException;
 
 
 @Repository
@@ -99,6 +102,57 @@ public class UserDaoImpl implements IUserDao {
         return result;
     }
 
+
+    @Override
+    public boolean updateEmail(User user, String newEmail) {
+        try {
+            //执行sql语句
+            jdbcTemplate.update("update user set email = ? where email = ?" , newEmail, user.getEmail());
+            //经查询，jdbcTemplate不会直接抛出SQL异常，而是InvalidResultSet异常和DataAccess异常
+            //但是，我的初衷是告诉用户经典的SQLErrorCodes，所以找办法得到SQL异常
+        } catch (DataAccessException de){
+            SQLException se = (SQLException) de.getCause();
+            if(se!=null)
+            {
+                System.out.println("Error in update database, error code: " + se.getErrorCode());
+            }
+            else
+            {
+                System.out.println("Error in jdbcTemplate");
+            }
+            System.out.println("failed to change email");
+            return false;
+
+        }
+        System.out.println("your email has changed into: "+newEmail);
+        return true;
+    }
+
+    @Override
+    public boolean updateUserName(User user, String newUserName) {
+        try {
+            //执行sql语句
+            jdbcTemplate.update(
+                    "update user set username = ? where email = ? " , newUserName, user.getEmail()
+            );
+            //经查询，jdbcTemplate不会直接抛出SQL异常，而是InvalidResultSet异常和DataAccess异常
+            //但是，我的初衷是告诉用户经典的SQLErrorCodes，所以找办法得到SQL异常
+        } catch (DataAccessException de){
+            SQLException se = (SQLException) de.getCause();
+            if(se!=null)
+            {
+                System.out.println("Error in update database(SQLException), error code: " + se.getErrorCode());
+            }
+            else
+            {
+                System.out.println("Error in jdbcTemplate(DataAccessException): "+de.getMessage());
+            }
+            System.out.println("failed to change name");
+            return false;
+        }
+        System.out.println("your name has changed into: "+newUserName);
+        return true;
+    }
 
 }
 

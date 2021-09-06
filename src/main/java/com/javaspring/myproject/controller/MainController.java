@@ -96,24 +96,29 @@ public class MainController {
     @CrossOrigin
     @PostMapping(value = "/api/sendEmail")
     @ResponseBody
-    public Result sendEmail(@Valid @RequestBody User user ,HttpSession httpSession ) {
+    public Result sendEmail(@Valid @RequestBody UserVo userVo ,HttpSession httpSession ) {
         /*
          * 使用HttpSession在服务器与浏览器建立对话，以验证邮箱验证码
          * */
-        if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
+        if (!EMailService.sendMimeMail(userVo.getEmail(), httpSession)) {
             String message = String.format("发送失败！邮箱已注册或不可用");
             return ResultFactory.buildFailResult(message);
         }
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
     }
 
-    //同上，但专用于修改信息时进行安全验证
+    /*
+     * 发送修改信息时进行安全验证邮箱
+     * 路径 /api/sendVerificationEmail
+     * 传参(json) email
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/sendVerificationEmail")
     @ResponseBody
-    public Result sendVerificationEmail(@Valid @RequestBody String email,HttpSession httpSession) {
+    public Result sendVerificationEmail(@Valid @RequestBody UserVo userVo,HttpSession httpSession) {
         //邮箱是唯一的，故通过当前邮箱确认待修改对象是否存在
-        User user = userService.getUserByEmail(email);
+        User user = userService.getUserByEmail(userVo.getEmail());
         if(user==null)
         {
             return ResultFactory.buildFailResult("该邮箱未注册! ");
@@ -126,6 +131,8 @@ public class MainController {
             return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
         }
     }
+
+
     /*
      * 注册新用户
      * 路径 /api/regist
@@ -155,8 +162,8 @@ public class MainController {
     @CrossOrigin
     @PostMapping(value = "/api/findPassword")
     @ResponseBody
-    public Result findPassWord(@Valid @RequestBody User user){
-        if(!EMailService.findPassword_sendEmail(user.getEmail())){
+    public Result findPassWord(@Valid @RequestBody UserVo userVo){
+        if(!EMailService.findPassword_sendEmail(userVo.getEmail())){
             String message=String.format("此邮箱非您注册时使用的邮箱,找回失败！");
             return ResultFactory.buildFailResult(message);
         }
@@ -165,16 +172,54 @@ public class MainController {
 
 
     /*
+     * 更改邮箱
+     * 路径 /api/updateEmail
+     * 传参(json) email,username,password,newEmail
+     * 返回值(json--Result)  code,message,data
+     * */
+    @CrossOrigin
+    @PostMapping(value = "/api/updateEmail")
+    @ResponseBody
+    public Result updateUserEmail(@Valid @RequestBody UserVo userVo) {
+        if (!EMailService.updateEmail(userVo)) {
+            String message = String.format("更改用户邮箱失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
+    }
+
+
+
+    /*
+     * 更改用户名
+     * 路径 /api/updateUserName
+     * 传参(json) email,username,password,newUserName
+     * 返回值(json--Result)  code,message,data
+     * */
+    @CrossOrigin
+    @PostMapping(value = "/api/updateUserName")
+    @ResponseBody
+    public Result updateUserName(@Valid @RequestBody UserVo userVo) {
+        if (!EMailService.updateUserName(userVo)) {
+            String message = String.format("更改用户名失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改用户名！");
+    }
+
+
+
+    /*
      * 修改用户密码
      * 路径 /api/changePassword
-     * 传参(json) email,oldPassword,newPassword,newPasswordRepeat
+     * 传参(json) email,Password,newPassword,newPasswordRepeat
      * 返回值(json--Result) code,message,data
      * */
     @CrossOrigin
     @PostMapping(value = "/api/changePassword")
     @ResponseBody
-    public Result fhangePassword(@Valid @RequestBody UserChangePW userChangePW){
-        if(!EMailService.changePassword(userChangePW.getEmail(),userChangePW.getOldPassword(),userChangePW.getNewPassword(),userChangePW.getNewPasswordRepeat())){
+    public Result fhangePassword(@Valid @RequestBody UserVo userVo){
+        if(!EMailService.changePassword(userVo.getEmail(),userVo.getPassword(),userVo.getNewPassword(),userVo.getNewPasswordRepeat())){
             String message=String.format("信息有误,修改失败！");
             return ResultFactory.buildFailResult(message);
         }
@@ -439,42 +484,6 @@ public class MainController {
         }
         return JSON.toJSONString(map);
     }
-    /*
-     * 更改邮箱
-     * 路径 /api/updateEmail
-     * 传参(json) email,username,password,newEmail
-     * 返回值(json--Result)  code,message,data
-     * */
-    @CrossOrigin
-    @PostMapping(value = "/api/updateEmail")
-    @ResponseBody
-    public Result updateUserEmail(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateEmail(userVo)) {
-            String message = String.format("更改用户邮箱失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
-    }
-      
-      
-      
-     /*
-     * 更改用户名
-     * 路径 /api/updateUserName
-     * 传参(json) email,username,password,newUserName
-     * 返回值(json--Result)  code,message,data
-     * */  
-    @CrossOrigin
-    @PostMapping(value = "/api/updateUserName")
-    @ResponseBody
-    public Result updateUserName(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateUserName(userVo)) {
-            String message = String.format("更改用户名失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户名！");
-    }
-
 
 
 }
