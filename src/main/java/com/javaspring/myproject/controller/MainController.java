@@ -430,13 +430,15 @@ public class MainController {
     @PostMapping(value ="/api/deleteBlog")
     @ResponseBody
     public String deleteBlog(@Valid @RequestBody Blog blog) {
-        Map<String,Object> map=new HashMap<>();
-        if(blogService.deleteBlog(blog)){
-            map.put("result","success");
-        }else{
+        Map<String, Object> map = new HashMap<>();
+        if (blogService.deleteBlog(blog)) {
+            map.put("result", "success");
+        } else {
 
-            map.put("result","fail");
+            map.put("result", "fail");
         }
+        return JSON.toJSONString(map);
+    }
     /*
      * 更改邮箱
      * 路径 /api/updateEmail
@@ -474,7 +476,5 @@ public class MainController {
     }
 
 
-        return JSON.toJSONString(map);
-    }
 
 }
