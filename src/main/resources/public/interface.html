@@ -52,7 +52,7 @@ url=http://IP:8008/xxx</br>
 /*</br>
 * 上传file</br>
 * 路径 /api/upload</br>
-* 传参(MultipartFile) file,username</br>
+* 传参(MultipartFile) file,username，(int)usage</br>
 * 返回值(json) result{"success","fail"},url,filename</br>
 * */</br>
 </br>
@@ -111,5 +111,26 @@ url=http://IP:8008/xxx</br>
 * 传参   null</br>
 * 返回值(json) blogid,username,time_,title,content,picture</br>
 * */</br>
+</br>
+/*</br>
+* 修改邮箱操作，和新的修改用户信息操作重复，不建议使用</br>
+* 路径 /api/updateEmail</br>
+* 传参(json) username/email,newEmail</br>
+* 返回值(json) Result</br>
+* */</br>
+</br>
+/*</br>
+* 修改用户名操作，和新的修改用户信息操作重复，不建议使用</br>
+* 路径 /api/getPublicBlogs</br>
+* 传参（json） username/email, newUsername</br>
+* 返回值(json) Result</br>
+* */</br>
+</br>
+/*</br>
+* 修改用户信息</br>
+* 路径 /api/updateUser</br>
+* 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）</br>
+* 返回值 Result</br>
+* */
 </body>
 </html>

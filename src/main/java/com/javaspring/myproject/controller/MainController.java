@@ -4,6 +4,7 @@ package com.javaspring.myproject.controller;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
 import com.javaspring.myproject.dao.impl.ResultFactory;
+import com.javaspring.myproject.dao.impl.UserVoToUser;
 import com.javaspring.myproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,8 +68,8 @@ public class MainController {
     @CrossOrigin
     @RequestMapping(value = "/api/login", method = RequestMethod.POST, produces = "application/json; charset=UTF-8")
     @ResponseBody
-    public Result login(@Valid @RequestBody User user, BindingResult bindingResult) {
-        if (user.getPassword().equals("")||user.getUsername().equals("")) {
+    public Result login(@Valid @RequestBody UserVo userVo, BindingResult bindingResult) {
+        if (userVo.getPassword().equals("")||userVo.getUsername().equals("")) {
             String message = String.format("账号或密码不能为空！");
             return ResultFactory.buildFailResult(message);
         }
@@ -76,15 +77,15 @@ public class MainController {
             String message = String.format("登陆失败，详细信息[%s]。", bindingResult.getFieldError().getDefaultMessage());
             return ResultFactory.buildFailResult(message);
         }
-        if (!userService.judgeByUserName(user)) {
-            user.setEmail(user.getUsername());
-            if (!userService.judgeByEMail(user)) {
+        if (!userService.judgeByUserName(userVo)) {
+            userVo.setEmail(userVo.getUsername());
+            if (!userService.judgeByEMail(userVo)) {
                 String message = String.format("登陆失败，账号/密码信息不正确。");
                 return ResultFactory.buildFailResult(message);
             }
-            user.setUsername((userService.getUser(new User(user.getEmail()))).getUsername());
+            userVo.setUsername((userService.getUserByEmail(new User(userVo.getEmail()).getEmail())).getUsername());
         }
-        return ResultFactory.buildSuccessResult("登陆成功。欢迎您，亲爱的"+user.getUsername()+"用户！");
+        return ResultFactory.buildSuccessResult("登陆成功。欢迎您，亲爱的"+userVo.getUsername()+"用户！");
     }
 
     /*
@@ -96,11 +97,11 @@ public class MainController {
     @CrossOrigin
     @PostMapping(value = "/api/sendEmail")
     @ResponseBody
-    public Result sendEmail(@Valid @RequestBody User user ,HttpSession httpSession ) {
+    public Result sendEmail(@Valid @RequestBody UserVo userVo ,HttpSession httpSession ) {
         /*
          * 使用HttpSession在服务器与浏览器建立对话，以验证邮箱验证码
          * */
-        if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
+        if (!EMailService.sendMimeMail(userVo.getEmail(), httpSession)) {
             String message = String.format("发送失败！邮箱已注册或不可用");
             return ResultFactory.buildFailResult(message);
         }
@@ -155,8 +156,8 @@ public class MainController {
     @CrossOrigin
     @PostMapping(value = "/api/findPassword")
     @ResponseBody
-    public Result findPassWord(@Valid @RequestBody User user){
-        if(!EMailService.findPassword_sendEmail(user.getEmail())){
+    public Result findPassWord(@Valid @RequestBody UserVo userVo){
+        if(!EMailService.findPassword_sendEmail(userVo.getEmail())){
             String message=String.format("此邮箱非您注册时使用的邮箱,找回失败！");
             return ResultFactory.buildFailResult(message);
         }
@@ -186,12 +187,12 @@ public class MainController {
     /*
      * 上传file
      * 路径 /api/upload
-     * 传参(MultipartFile) file,username
+     * 传参(MultipartFile) file,username,(int) usage
      * 返回值(json) result{"success","fail"},url,filename
      * */
     @CrossOrigin
     @PostMapping(value ="/api/upload")
-    public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) throws IOException {
+    public String upload(@RequestParam("file") MultipartFile[] files,String username,int usage,HttpServletRequest request) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH-mm-ss");
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
 
@@ -230,7 +231,13 @@ public class MainController {
                     map.put("result","success");
                     map.put("url",filePath);
                     map.put("filename",fileName);
-
+                    if(usage==1)
+                    {
+                        UserVo userVo = new UserVo();
+                        userVo.setUsername(username);
+                        userVo.setNewTouxiang(filePath);
+                        userService.updateUser(userVo);
+                    }
                     return JSON.toJSONString(map);
                 }
         }
@@ -419,6 +426,14 @@ public class MainController {
 
         return JSON.toJSONString(maplist);
     }
+
+    /*
+     * 修改邮箱操作，和新的修改用户信息操作重复，不建议使用
+     * 路径 /api/updateEmail
+     * 传参(json) username/email,newEmail
+     * 返回值(json) Result
+     * */
+    //可以不用此接口了
     @CrossOrigin
     @PostMapping(value = "/api/updateEmail")
     @ResponseBody
@@ -429,6 +444,13 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
     }
+    /*
+     * 修改用户名操作，和新的修改用户信息操作重复，不建议使用
+     * 路径 /api/getPublicBlogs
+     * 传参（json） username/email, newUsername
+     * 返回值(json) Result
+     * */
+    //可以不用此接口了
     @CrossOrigin
     @PostMapping(value = "/api/updateUserName")
     @ResponseBody
@@ -439,7 +461,22 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改用户名！");
     }
+    /*
+     * 修改用户信息
+     * 路径 /api/updateUser
+     * 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）
+     * 返回值 Result
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/updateUser")
+    @ResponseBody
+    public Result updateUser(@Valid @RequestBody UserVo userVo){
+        if (!userService.updateUser(userVo)) {
+            String message = String.format("更改个人信息失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修个人信息！");
 
-
+    }
 
 }
