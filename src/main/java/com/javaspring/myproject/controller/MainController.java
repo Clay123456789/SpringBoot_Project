@@ -402,7 +402,26 @@ public class MainController {
         return JSON.toJSONString(maplist);
     }
 
+    /*
+     * 删除blog
+     * 路径 /api/deleteBlog
+     * 传参(json) blogid,username
+     * 返回值(json)(String) result{"success","fail"}
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/deleteBlog")
+    @ResponseBody
+    public String deleteBlog(@Valid @RequestBody Blog blog) {
+        Map<String,Object> map=new HashMap<>();
+        if(blogService.deleteBlog(blog)){
+            map.put("result","success");
+        }else{
+
+            map.put("result","fail");
+        }
 
 
+        return JSON.toJSONString(map);
+    }
 
 }

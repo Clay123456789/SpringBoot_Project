@@ -18,8 +18,8 @@ public class BlogServiceImpl implements IBlogService {
     }
 
     @Override
-    public void deleteBlog(Blog blog) {
-        blogDao.deleteBlog(blog);
+    public boolean deleteBlog(Blog blog) {
+        return blogDao.deleteBlog(blog);
     }
 
     @Override

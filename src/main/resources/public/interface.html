@@ -6,14 +6,16 @@
 </head>
 <body>
 以下为目前后端接口信息，均为post请求接口</br>
-IP=10.128.214.119</br>
+IP=10.28.173.235</br>
 url=http://IP:8008/xxx</br>
+</br>
 /*</br>
 * 登陆</br>
 * 路径 /api/login</br>
 * 传参(json) username,password</br>
 * 返回值(json--Result) code,message,data</br>
 * */</br>
+</br>
 </br>
 /*</br>
 * 发送注册邮箱</br>
@@ -39,14 +41,12 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 </br>
-</br>
 /*</br>
 * 修改用户密码</br>
 * 路径 /api/changePassword</br>
 * 传参(json) email,oldPassword,newPassword,newPasswordRepeat</br>
 * 返回值(json--Result) code,message,data</br>
 * */</br>
-</br>
 </br>
 </br>
 /*</br>
@@ -63,6 +63,7 @@ url=http://IP:8008/xxx</br>
 * 传参(json) username,filename,date_</br>
 * 返回值(json) filename,username,url,date_,size_</br>
 * */</br>
+</br>
 </br>
 /*</br>
 * 获取files</br>
@@ -96,7 +97,6 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 </br>
-</br>
 /*</br>
 * 获取blogs</br>
 * 路径 /api/getAllBlogs</br>
@@ -110,6 +110,14 @@ url=http://IP:8008/xxx</br>
 * 路径 /api/getPublicBlogs</br>
 * 传参   null</br>
 * 返回值(json) blogid,username,time_,title,content,picture</br>
+* */</br>
+</br>
+</br>
+/*</br>
+* 删除blog</br>
+* 路径 /api/deleteBlog</br>
+* 传参(json) blogid,username</br>
+* 返回值(json)(String) result{"success","fail"}</br>
 * */</br>
 </body>
 </html>
