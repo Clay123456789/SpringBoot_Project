@@ -135,5 +135,14 @@ url=http://IP:8008/xxx</br>
 * 传参(json) blogid,username</br>
 * 返回值(json)(String) result{"success","fail"}</br>
 * */</br>
+</br>
+</br>
+/*</br>
+* 修改blog的内容</br>
+* 路径 /api/updateBlog</br>
+* 传参(json):blogid,username,time_,title,content,picture,visible</br>
+* 返回值(String) Result{message,data}</br>
+* 功能：进行判断，只能修改自己发布的blog，判断依据为username要与数据库相关blog中存储的username相同</br>
+* */</br>
 </body>
 </html>
