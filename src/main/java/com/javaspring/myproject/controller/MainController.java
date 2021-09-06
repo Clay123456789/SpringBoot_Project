@@ -485,5 +485,31 @@ public class MainController {
         return JSON.toJSONString(map);
     }
 
+    /*
+     * 修改blog的内容
+     * 路径 /api/updateBlog
+     * 传参(json):blogid,username,time_,title,content,picture,visible
+     * 返回值(String) Result{message,data}
+     * 功能：进行判断，只能修改自己发布的blog，判断依据为username要与数据库相关blog中存储的username相同
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/updateBlog")
+    @ResponseBody
+    public Result updateBlog(@Valid @RequestBody Blog blog){
+        for (int i = 0; i < 100; i++) {
+            System.out.println("blog:"+blog.toString());
+        }
+        Blog blog1=blogService.getBlog(blog);
+        for (int i = 0; i < 100; i++) {
+            System.out.println("blog1:"+blog1.toString());
+        }
+        if(blog1!=null&&blog1.getUsername().equals(blog.getUsername())){
+            blogService.updateBlog(blog);
+        }else{
+            String message=String.format("更改blog失败，不能更改其他用户的blog！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改blog信息！");
+    }
 
 }

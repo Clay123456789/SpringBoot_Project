@@ -38,12 +38,8 @@ public class BlogDaoImpl implements IBlogDao {
 
     @Override
     public void updateBlog(Blog blog) {
-        /*
-         * 待实现
-         *
-         *
-         *
-         * */
+        String sql="update blog set time_=?,title=?,content=?,picture=?,visible=? where blogid=?";
+        jdbcTemplate.update(sql,blog.getTime_(),blog.getTitle(),blog.getContent(),blog.getPicture(),blog.getVisible(),blog.getBlogid());
     }
 
     @Override
