@@ -90,6 +90,7 @@ public class Blog {
                 ", content='" + content + '\'' +
                 ", title='" + title + '\'' +
                 ", picture=" + Arrays.toString(picture) +
+                ", visible='" + visible + '\'' +
                 '}';
     }
 }

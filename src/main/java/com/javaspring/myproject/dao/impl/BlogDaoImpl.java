@@ -26,19 +26,20 @@ public class BlogDaoImpl implements IBlogDao {
     }
 
     @Override
-    public void deleteBlog(Blog blog) {
-        jdbcTemplate.update("delete from blog where blogid= ?",blog.getBlogid());
-
+    public boolean deleteBlog(Blog blog) {
+       int  number=   jdbcTemplate.update("delete from blog where blogid = ? and username = ?",blog.getBlogid(),blog.getUsername());
+        if(number!=0){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     @Override
     public void updateBlog(Blog blog) {
-        /*
-         * 待实现
-         *
-         *
-         *
-         * */
+        String sql="update blog set time_=?,title=?,content=?,picture=?,visible=? where blogid=?";
+        jdbcTemplate.update(sql,blog.getTime_(),blog.getTitle(),blog.getContent(),blog.getPicture(),blog.getVisible(),blog.getBlogid());
     }
 
     @Override

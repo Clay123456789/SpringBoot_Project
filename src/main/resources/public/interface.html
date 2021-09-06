@@ -6,14 +6,16 @@
 </head>
 <body>
 以下为目前后端接口信息，均为post请求接口</br>
-IP=10.128.214.119</br>
+IP=10.28.173.235</br>
 url=http://IP:8008/xxx</br>
+</br>
 /*</br>
 * 登陆</br>
 * 路径 /api/login</br>
 * 传参(json) username,password</br>
 * 返回值(json--Result) code,message,data</br>
 * */</br>
+</br>
 </br>
 /*</br>
 * 发送注册邮箱</br>
@@ -39,14 +41,20 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 </br>
-</br>
 /*</br>
 * 修改用户密码</br>
 * 路径 /api/changePassword</br>
-* 传参(json) email,oldPassword,newPassword,newPasswordRepeat</br>
+* 传参(json) email,password,newPassword,newPasswordRepeat</br>
 * 返回值(json--Result) code,message,data</br>
 * */</br>
 </br>
+</br>
+/*</br>
+* 修改用户信息</br>
+* 路径 /api/updateUser</br>
+* 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）</br>
+* 返回值 Result</br>
+* */
 </br>
 </br>
 /*</br>
@@ -63,6 +71,7 @@ url=http://IP:8008/xxx</br>
 * 传参(json) username,filename,date_</br>
 * 返回值(json) filename,username,url,date_,size_</br>
 * */</br>
+</br>
 </br>
 /*</br>
 * 获取files</br>
@@ -96,7 +105,6 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 </br>
-</br>
 /*</br>
 * 获取blogs</br>
 * 路径 /api/getAllBlogs</br>
@@ -112,25 +120,21 @@ url=http://IP:8008/xxx</br>
 * 返回值(json) blogid,username,time_,title,content,picture</br>
 * */</br>
 </br>
-/*</br>
-* 修改邮箱操作，和新的修改用户信息操作重复，不建议使用</br>
-* 路径 /api/updateEmail</br>
-* 传参(json) username/email,newEmail</br>
-* 返回值(json) Result</br>
-* */</br>
 </br>
 /*</br>
-* 修改用户名操作，和新的修改用户信息操作重复，不建议使用</br>
-* 路径 /api/getPublicBlogs</br>
-* 传参（json） username/email, newUsername</br>
-* 返回值(json) Result</br>
+* 删除blog</br>
+* 路径 /api/deleteBlog</br>
+* 传参(json) blogid,username</br>
+* 返回值(json)(String) result{"success","fail"}</br>
 * */</br>
 </br>
+</br>
 /*</br>
-* 修改用户信息</br>
-* 路径 /api/updateUser</br>
-* 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）</br>
-* 返回值 Result</br>
-* */
+* 修改blog的内容</br>
+* 路径 /api/updateBlog</br>
+* 传参(json):blogid,username,time_,title,content,picture,visible</br>
+* 返回值(String) Result{message,data}</br>
+* 功能：进行判断，只能修改自己发布的blog，判断依据为username要与数据库相关blog中存储的username相同</br>
+* */</br>
 </body>
 </html>

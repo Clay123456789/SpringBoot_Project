@@ -108,13 +108,18 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
     }
 
-    //同上，但专用于修改信息时进行安全验证
+    /*
+     * 发送修改信息时进行安全验证邮箱
+     * 路径 /api/sendVerificationEmail
+     * 传参(json) email
+     * 返回值(json--Result) code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/sendVerificationEmail")
     @ResponseBody
-    public Result sendVerificationEmail(@Valid @RequestBody String email,HttpSession httpSession) {
+    public Result sendVerificationEmail(@Valid @RequestBody UserVo userVo,HttpSession httpSession) {
         //邮箱是唯一的，故通过当前邮箱确认待修改对象是否存在
-        User user = userService.getUserByEmail(email);
+        User user = userService.getUserByEmail(userVo.getEmail());
         if(user==null)
         {
             return ResultFactory.buildFailResult("该邮箱未注册! ");
@@ -127,6 +132,8 @@ public class MainController {
             return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
         }
     }
+
+
     /*
      * 注册新用户
      * 路径 /api/regist
@@ -168,21 +175,37 @@ public class MainController {
     /*
      * 修改用户密码
      * 路径 /api/changePassword
-     * 传参(json) email,oldPassword,newPassword,newPasswordRepeat
+     * 传参(json) email,Password,newPassword,newPasswordRepeat
      * 返回值(json--Result) code,message,data
      * */
     @CrossOrigin
     @PostMapping(value = "/api/changePassword")
     @ResponseBody
-    public Result fhangePassword(@Valid @RequestBody UserChangePW userChangePW){
-        if(!EMailService.changePassword(userChangePW.getEmail(),userChangePW.getOldPassword(),userChangePW.getNewPassword(),userChangePW.getNewPasswordRepeat())){
+    public Result fhangePassword(@Valid @RequestBody UserVo userVo){
+        if(!EMailService.changePassword(userVo.getEmail(),userVo.getPassword(),userVo.getNewPassword(),userVo.getNewPasswordRepeat())){
             String message=String.format("信息有误,修改失败！");
             return ResultFactory.buildFailResult(message);
         }
         return ResultFactory.buildSuccessResult("修改成功,修改后密码已发送至您的邮箱，请确认！");
     }
 
-
+    /*
+     * 修改用户信息
+     * 路径 /api/updateUser
+     * 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）
+     * 返回值 Result
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/updateUser")
+    @ResponseBody
+    public Result updateUser(@Valid @RequestBody UserVo userVo){
+        if (!userService.updateUser(userVo)) {
+            String message = String.format("更改个人信息失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修个人信息！");
+    }
+  
 
     /*
      * 上传file
@@ -428,55 +451,52 @@ public class MainController {
     }
 
     /*
-     * 修改邮箱操作，和新的修改用户信息操作重复，不建议使用
-     * 路径 /api/updateEmail
-     * 传参(json) username/email,newEmail
-     * 返回值(json) Result
-     * */
-    //可以不用此接口了
-    @CrossOrigin
-    @PostMapping(value = "/api/updateEmail")
-    @ResponseBody
-    public Result updateUserEmail(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateEmail(userVo)) {
-            String message = String.format("更改用户邮箱失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
-    }
-    /*
-     * 修改用户名操作，和新的修改用户信息操作重复，不建议使用
-     * 路径 /api/getPublicBlogs
-     * 传参（json） username/email, newUsername
-     * 返回值(json) Result
-     * */
-    //可以不用此接口了
-    @CrossOrigin
-    @PostMapping(value = "/api/updateUserName")
-    @ResponseBody
-    public Result updateUserName(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateUserName(userVo)) {
-            String message = String.format("更改用户名失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户名！");
-    }
-    /*
-     * 修改用户信息
-     * 路径 /api/updateUser
-     * 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）
-     * 返回值 Result
+     * 删除blog
+     * 路径 /api/deleteBlog
+     * 传参(json) blogid,username
+     * 返回值(json)(String) result{"success","fail"}
      * */
     @CrossOrigin
-    @PostMapping(value ="/api/updateUser")
+    @PostMapping(value ="/api/deleteBlog")
     @ResponseBody
-    public Result updateUser(@Valid @RequestBody UserVo userVo){
-        if (!userService.updateUser(userVo)) {
-            String message = String.format("更改个人信息失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修个人信息！");
+    public String deleteBlog(@Valid @RequestBody Blog blog) {
+        Map<String, Object> map = new HashMap<>();
+        if (blogService.deleteBlog(blog)) {
+            map.put("result", "success");
+        } else {
 
+            map.put("result", "fail");
+        }
+        return JSON.toJSONString(map);
     }
+  
 
+    /*
+     * 修改blog的内容
+     * 路径 /api/updateBlog
+     * 传参(json):blogid,username,time_,title,content,picture,visible
+     * 返回值(String) Result{message,data}
+     * 功能：进行判断，只能修改自己发布的blog，判断依据为username要与数据库相关blog中存储的username相同
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/updateBlog")
+    @ResponseBody
+    public Result updateBlog(@Valid @RequestBody Blog blog){
+        for (int i = 0; i < 100; i++) {
+            System.out.println("blog:"+blog.toString());
+        }
+        Blog blog1=blogService.getBlog(blog);
+        for (int i = 0; i < 100; i++) {
+            System.out.println("blog1:"+blog1.toString());
+        }
+        if(blog1!=null&&blog1.getUsername().equals(blog.getUsername())){
+            blogService.updateBlog(blog);
+        }else{
+            String message=String.format("更改blog失败，不能更改其他用户的blog！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修改blog信息！");
+    }
+  
+  
 }
