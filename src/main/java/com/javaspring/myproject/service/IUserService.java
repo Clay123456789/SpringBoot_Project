@@ -1,16 +1,25 @@
 package com.javaspring.myproject.service;
 
 import com.javaspring.myproject.beans.User;
+import com.javaspring.myproject.beans.UserVo;
+
+import java.util.List;
 
 public interface IUserService {
-    //增删改查
-    void insertUser(User user);
-    void deleteUser(User user);
-    void updateUser(User user);
-    User getUser(User user);
+    //增删改查方法
+    int insertUser(UserVo userVo);
+    int deleteUser(String username);
+    User getUser(String username);
     User getUserByEmail(String email);
-    //通过用户名验证用户身份是否合法
-    boolean judgeByUserName(User user);
-    //通过邮箱验证用户身份是否合法
-    boolean judgeByEMail(User user);
+    //根据Username/EMail及密码判断用户是否存在
+    boolean judgeByUserName(UserVo userVo);
+    boolean judgeByEMail(UserVo userVo);
+    int updatePassword(String password,String email);
+    //更改邮箱
+    boolean updateEmail(UserVo userVo);
+    //更改用户名
+    boolean updateUserName(UserVo userVo);
+    boolean updateUser(UserVo userVo);
+
+    List<User> getAllUsers();
 }

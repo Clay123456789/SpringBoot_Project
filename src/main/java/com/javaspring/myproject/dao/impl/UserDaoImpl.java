@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
+import java.util.List;
 
 
 @Repository
@@ -19,43 +20,38 @@ public class UserDaoImpl implements IUserDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+
+
+    //理论上所有用username锁定对象的函数都可以使用email，但数据库的主键为username，故推荐使用username
     @Override
-    public void insertUser(User user) {
-        jdbcTemplate.update("insert into user(username,password,email) values(?,?,?)",user.getUsername(),user.getPassword(),user.getEmail());
+    public int insertUser(User user) {
+        //返回影响行数，为1表示修改成功
+        return jdbcTemplate.update("insert into user(username,tel,password,email,touxiang,qianming,age,sex) values(?,?,?,?,?,?,?,?)",
+                user.getUsername(),user.getTel(),user.getPassword(),user.getEmail(),
+                user.getTouxiang(),user.getQianming(),user.getAge(),user.getSex());
 
     }
 
     @Override
-    public  void  deleteUser(User user) {
-        jdbcTemplate.update("delete from user where username= ? and password = ?",user.getUsername(),user.getPassword());
+    public int deleteUser(String username) {
+        return jdbcTemplate.update("delete from user where username = ?",username);
     }
 
     @Override
-    public void updateUser(User user) {
-        /*
-         * 待实现
-         *
-         *
-         *
-         * */
-    }
-
-    @Override
-    public User getUser(User user){
+    public User getUser(String username) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
-        Object object1 = null,object2=null;
+        Object object1 = null;
+        //queryForObject会抛出非检查性异常DataAccessException，同时对返回值进行requiredSingleResult操作
+        //requiredSingleResult会在查询结果为空的时候抛出EmptyResultDataAccessException异常，需要捕获后进行处理
         try {
-            object1 = jdbcTemplate.queryForObject("select * from user where username = ?",rowMapper,user.getUsername());
+            object1 = jdbcTemplate.queryForObject("select * from user where username = ?",rowMapper,username);
         } catch (EmptyResultDataAccessException e1) {
-            try {
-                object2 = jdbcTemplate.queryForObject("select * from user where email = ?",rowMapper,user.getEmail());
-            } catch (EmptyResultDataAccessException e2) {
-                return null;
-            }
-            return (User)object2;
+            //查询结果为空，返回null
+            return null;
         }
-       return (User)object1;
+        return (User) object1;
     }
+
     @Override
     public User getUserByEmail(String email) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
@@ -69,6 +65,14 @@ public class UserDaoImpl implements IUserDao {
             return null;
         }
     }
+
+    @Override
+    public List<User> getAllUsers() {
+        RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
+        List<User> userList = jdbcTemplate.query("select * from user order by username DESC ",rowMapper);
+        return userList;
+    }
+
     @Override
     public boolean judgeByUserName(User user) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
@@ -93,8 +97,6 @@ public class UserDaoImpl implements IUserDao {
         return true;
     }
 
-
-
     @Override
     public int updatePassword(String password, String email) {
         String sql="update user set password=? where email=?";
@@ -102,12 +104,16 @@ public class UserDaoImpl implements IUserDao {
         return result;
     }
 
-
     @Override
     public boolean updateEmail(User user, String newEmail) {
         try {
-            //执行sql语句
-            jdbcTemplate.update("update user set email = ? where email = ?" , newEmail, user.getEmail());
+            if(user.getEmail()!=null) {
+                //执行sql语句
+                jdbcTemplate.update("update user set email = ? where email = ?", newEmail, user.getEmail());
+            }
+            else {
+                jdbcTemplate.update("update user set email = ? where username = ?", newEmail, user.getUsername());
+            }
             //经查询，jdbcTemplate不会直接抛出SQL异常，而是InvalidResultSet异常和DataAccess异常
             //但是，我的初衷是告诉用户经典的SQLErrorCodes，所以找办法得到SQL异常
         } catch (DataAccessException de){
@@ -129,12 +135,15 @@ public class UserDaoImpl implements IUserDao {
     }
 
     @Override
-    public boolean updateUserName(User user, String newUserName) {
+    public boolean updateUserName(User user, String newUsername) {
         try {
-            //执行sql语句
-            jdbcTemplate.update(
-                    "update user set username = ? where email = ? " , newUserName, user.getEmail()
-            );
+            if(user.getEmail()!=null) {
+                //执行sql语句
+                jdbcTemplate.update("update user set username = ? where email = ?", newUsername, user.getEmail());
+            }
+            else {
+                jdbcTemplate.update("update user set username = ? where username = ?", newUsername, user.getUsername());
+            }
             //经查询，jdbcTemplate不会直接抛出SQL异常，而是InvalidResultSet异常和DataAccess异常
             //但是，我的初衷是告诉用户经典的SQLErrorCodes，所以找办法得到SQL异常
         } catch (DataAccessException de){
@@ -150,9 +159,17 @@ public class UserDaoImpl implements IUserDao {
             System.out.println("failed to change name");
             return false;
         }
-        System.out.println("your name has changed into: "+newUserName);
+        System.out.println("your name has changed into: "+newUsername);
         return true;
     }
+    @Override
+    public boolean updateUser(User User, User newUser) {
+        //暴力更新，直接先delete后insert
+        if(deleteUser(User.getUsername())==1 && insertUser(newUser)==1)
+            return true;
+        return false;
+    }
 
+   
 }
 

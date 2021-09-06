@@ -4,6 +4,7 @@ package com.javaspring.myproject.controller;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
 import com.javaspring.myproject.dao.impl.ResultFactory;
+import com.javaspring.myproject.dao.impl.UserVoToUser;
 import com.javaspring.myproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,8 +68,8 @@ public class MainController {
     @CrossOrigin
     @RequestMapping(value = "/api/login", method = RequestMethod.POST, produces = "application/json; charset=UTF-8")
     @ResponseBody
-    public Result login(@Valid @RequestBody User user, BindingResult bindingResult) {
-        if (user.getPassword().equals("")||user.getUsername().equals("")) {
+    public Result login(@Valid @RequestBody UserVo userVo, BindingResult bindingResult) {
+        if (userVo.getPassword().equals("")||userVo.getUsername().equals("")) {
             String message = String.format("账号或密码不能为空！");
             return ResultFactory.buildFailResult(message);
         }
@@ -76,15 +77,15 @@ public class MainController {
             String message = String.format("登陆失败，详细信息[%s]。", bindingResult.getFieldError().getDefaultMessage());
             return ResultFactory.buildFailResult(message);
         }
-        if (!userService.judgeByUserName(user)) {
-            user.setEmail(user.getUsername());
-            if (!userService.judgeByEMail(user)) {
+        if (!userService.judgeByUserName(userVo)) {
+            userVo.setEmail(userVo.getUsername());
+            if (!userService.judgeByEMail(userVo)) {
                 String message = String.format("登陆失败，账号/密码信息不正确。");
                 return ResultFactory.buildFailResult(message);
             }
-            user.setUsername((userService.getUser(new User(user.getEmail()))).getUsername());
+            userVo.setUsername((userService.getUserByEmail(new User(userVo.getEmail()).getEmail())).getUsername());
         }
-        return ResultFactory.buildSuccessResult("登陆成功。欢迎您，亲爱的"+user.getUsername()+"用户！");
+        return ResultFactory.buildSuccessResult("登陆成功。欢迎您，亲爱的"+userVo.getUsername()+"用户！");
     }
 
     /*
@@ -172,44 +173,6 @@ public class MainController {
 
 
     /*
-     * 更改邮箱
-     * 路径 /api/updateEmail
-     * 传参(json) email,username,password,newEmail
-     * 返回值(json--Result)  code,message,data
-     * */
-    @CrossOrigin
-    @PostMapping(value = "/api/updateEmail")
-    @ResponseBody
-    public Result updateUserEmail(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateEmail(userVo)) {
-            String message = String.format("更改用户邮箱失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
-    }
-
-
-
-    /*
-     * 更改用户名
-     * 路径 /api/updateUserName
-     * 传参(json) email,username,password,newUserName
-     * 返回值(json--Result)  code,message,data
-     * */
-    @CrossOrigin
-    @PostMapping(value = "/api/updateUserName")
-    @ResponseBody
-    public Result updateUserName(@Valid @RequestBody UserVo userVo) {
-        if (!EMailService.updateUserName(userVo)) {
-            String message = String.format("更改用户名失败！");
-            return ResultFactory.buildFailResult(message);
-        }
-        return ResultFactory.buildSuccessResult("已成功修改用户名！");
-    }
-
-
-
-    /*
      * 修改用户密码
      * 路径 /api/changePassword
      * 传参(json) email,Password,newPassword,newPasswordRepeat
@@ -226,17 +189,33 @@ public class MainController {
         return ResultFactory.buildSuccessResult("修改成功,修改后密码已发送至您的邮箱，请确认！");
     }
 
-
+    /*
+     * 修改用户信息
+     * 路径 /api/updateUser
+     * 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）
+     * 返回值 Result
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/updateUser")
+    @ResponseBody
+    public Result updateUser(@Valid @RequestBody UserVo userVo){
+        if (!userService.updateUser(userVo)) {
+            String message = String.format("更改个人信息失败！");
+            return ResultFactory.buildFailResult(message);
+        }
+        return ResultFactory.buildSuccessResult("已成功修个人信息！");
+    }
+  
 
     /*
      * 上传file
      * 路径 /api/upload
-     * 传参(MultipartFile) file,username
+     * 传参(MultipartFile) file,username,(int) usage
      * 返回值(json) result{"success","fail"},url,filename
      * */
     @CrossOrigin
     @PostMapping(value ="/api/upload")
-    public String upload(@RequestParam("file") MultipartFile[] files,String username,HttpServletRequest request) throws IOException {
+    public String upload(@RequestParam("file") MultipartFile[] files,String username,int usage,HttpServletRequest request) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/HH-mm-ss");
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy/MM/dd/HH:mm:ss");
 
@@ -275,7 +254,13 @@ public class MainController {
                     map.put("result","success");
                     map.put("url",filePath);
                     map.put("filename",fileName);
-
+                    if(usage==1)
+                    {
+                        UserVo userVo = new UserVo();
+                        userVo.setUsername(username);
+                        userVo.setNewTouxiang(filePath);
+                        userService.updateUser(userVo);
+                    }
                     return JSON.toJSONString(map);
                 }
         }
@@ -484,6 +469,7 @@ public class MainController {
         }
         return JSON.toJSONString(map);
     }
+  
 
     /*
      * 修改blog的内容
@@ -511,5 +497,6 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
-
+  
+  
 }
