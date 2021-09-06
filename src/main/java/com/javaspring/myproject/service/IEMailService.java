@@ -24,4 +24,8 @@ public interface IEMailService {
     public boolean findPassword_sendEmail(String email);
 
     public boolean changePassword(String email, String oldPassword, String newPassword, String newPasswordRepeat);
+    //更改用户邮箱
+    boolean updateEmail(UserVo userVo);
+    //更改用户名
+    boolean updateUserName(UserVo userVo);
 }

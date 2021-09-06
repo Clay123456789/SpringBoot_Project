@@ -33,6 +33,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public User getUserByEmail(String email) {
+        return userDao.getUserByEmail(email);
+    }
+
+    @Override
     public boolean judgeByUserName(User user) {
         return userDao.judgeByUserName(user);
     }

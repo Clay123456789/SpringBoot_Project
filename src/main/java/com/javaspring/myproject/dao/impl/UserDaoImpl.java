@@ -53,7 +53,19 @@ public class UserDaoImpl implements IUserDao {
         }
        return (User)object1;
     }
-
+    @Override
+    public User getUserByEmail(String email) {
+        RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
+        //如果使用该email查询不到或者查询到多条（后者不会发生），会抛出查询异常
+        try {
+            User user = jdbcTemplate.queryForObject("select * from user where email = ?" , rowMapper, email);
+            return user;
+        } catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+            System.out.println("wrong email: "+email+" please check your email and try again! ");
+            return null;
+        }
+    }
     @Override
     public boolean judgeByUserName(User user) {
         RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);

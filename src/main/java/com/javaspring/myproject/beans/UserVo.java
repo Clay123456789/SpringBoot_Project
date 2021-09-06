@@ -9,7 +9,10 @@ public class UserVo {
     private String email;
     //    验证码
     private String code;
+    //新信息
+    private String newUserName;
 
+    private String newEmail;
     public UserVo() {
     }
 
@@ -51,5 +54,20 @@ public class UserVo {
         this.code = code;
     }
 
+    public void setNewUserName(String newUserName)
+    {
+        this.newUserName=newUserName;
+    }
+    public String getNewUserName(){
+        return this.newUserName;
+    }
 
+    public void setNewEmail(String newEmail)
+    {
+        this.newEmail=newEmail;
+    }
+    public String getNewEmail()
+    {
+        return this.newEmail;
+    }
 }
