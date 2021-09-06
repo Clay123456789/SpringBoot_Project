@@ -419,6 +419,30 @@ public class MainController {
 
         return JSON.toJSONString(maplist);
     }
+
+    /*
+     * 删除blog
+     * 路径 /api/deleteBlog
+     * 传参(json) blogid,username
+     * 返回值(json)(String) result{"success","fail"}
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/deleteBlog")
+    @ResponseBody
+    public String deleteBlog(@Valid @RequestBody Blog blog) {
+        Map<String,Object> map=new HashMap<>();
+        if(blogService.deleteBlog(blog)){
+            map.put("result","success");
+        }else{
+
+            map.put("result","fail");
+        }
+    /*
+     * 更改邮箱
+     * 路径 /api/updateEmail
+     * 传参(json) email,username,password,newEmail
+     * 返回值(json--Result)  code,message,data
+     * */
     @CrossOrigin
     @PostMapping(value = "/api/updateEmail")
     @ResponseBody
@@ -429,6 +453,15 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改用户邮箱！");
     }
+      
+      
+      
+     /*
+     * 更改用户名
+     * 路径 /api/updateUserName
+     * 传参(json) email,username,password,newUserName
+     * 返回值(json--Result)  code,message,data
+     * */  
     @CrossOrigin
     @PostMapping(value = "/api/updateUserName")
     @ResponseBody
@@ -441,5 +474,7 @@ public class MainController {
     }
 
 
+        return JSON.toJSONString(map);
+    }
 
 }
