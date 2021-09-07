@@ -3,6 +3,8 @@ package com.javaspring.myproject.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
+import com.javaspring.myproject.beans.Record;
+import com.javaspring.myproject.dao.IRecordDao;
 import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ public class MainController {
     private IBlogService blogService;
     @Autowired
     private IFileService fileService;
+    @Autowired
+    private IRecordService recordService;
+
 
     //测试接口--home
 
@@ -512,4 +517,82 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
 
+
+    /*
+    * 上传备忘录的记录
+    * 路径：/api/recordUpload
+    * 传参(json):username,context,date_
+    * 返回值(String)：Result{"插入记录成功！","插入记录失败！"}
+    * */
+    @CrossOrigin
+    @PostMapping(value="/api/recordUpload")
+    @ResponseBody
+    public Result recordUpload(@Valid @RequestBody Record record){
+        Record record1=null;
+        recordService.insertRecord(record);
+        record1=recordService.getRecord(record);
+        if(record1!=null){
+            return ResultFactory.buildSuccessResult("插入记录成功！");
+        }
+        else{
+            return ResultFactory.buildFailResult("插入记录失败！");
+        }
+    }
+
+    /*
+     * 删除备忘录的记录
+     * 路径：/api/deleteRecord
+     * 传参(json):username,context(可为空),date_
+     * 返回值(String)：Result{"删除记录失败!","删除记录成功！"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/deleteRecord")
+    @ResponseBody
+    public Result recordDelete(@Valid @RequestBody Record record){
+        if(!recordService.deleteRecord(record)){
+            return ResultFactory.buildFailResult("删除记录失败!");
+        }
+        else{
+            return ResultFactory.buildSuccessResult("删除记录成功！");
+        }
+    }
+
+    /*
+     * 修改备忘录的记录
+     * 路径：/api/updateRecord
+     * 传参(json):username,context,date_
+     * 返回值(String)：Result{"更新记录成功!","更新记录失败!"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/updateRecord")
+    @ResponseBody
+    public Result recordUpdate(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);
+        recordService.updateRecord(record);
+        Record record2= recordService.getRecord(record);
+        if(!record1.getContext().equals(record2.getContext())){
+            return ResultFactory.buildSuccessResult("更新记录成功!");
+        }
+        else{
+            return ResultFactory.buildFailResult("更新记录失败!");
+        }
+    }
+
+    /*
+     * 修改备忘录的记录
+     * 路径：/api/updateRecord
+     * 传参(json):username,context,date_
+     * 返回值(json): username,context,date_
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/getRecord")
+    @ResponseBody
+    public String recordGet(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);
+        Map<String,Object> map=new HashMap<>();
+        map.put("username",record1.getUsername());
+        map.put("context",record1.getContext());
+        map.put("date_",record1.getDate_());
+        return JSON.toJSONString(map);
+    }
 }
