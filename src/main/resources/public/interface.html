@@ -44,14 +44,6 @@ url=http://IP:8008/xxx</br>
 </br>
 </br>
 /*</br>
-* 更改用户名</br>
-* 路径 /api/updateUserName</br>
-* 传参(json) email,username,password,newUserName</br>
-* 返回值(json--Result)  code,message,data</br>
-* */</br>
-</br>
-</br>
-/*</br>
 * 修改用户密码</br>
 * 路径 /api/changePassword</br>
 * 传参(json) email,password,newPassword,newPasswordRepeat</br>
@@ -60,17 +52,17 @@ url=http://IP:8008/xxx</br>
 </br>
 </br>
 /*</br>
-* 更改邮箱</br>
-* 路径 /api/updateEmail</br>
-* 传参(json) email,username,password,newEmail</br>
-* 返回值(json--Result)  code,message,data</br>
-* */</br>
+* 修改用户信息</br>
+* 路径 /api/updateUser</br>
+* 传参(json) username(定位需要修改的人） #修改属性#(newUsername,newEmail,newTel等等）</br>
+* 返回值 Result</br>
+* */
 </br>
 </br>
 /*</br>
 * 上传file</br>
 * 路径 /api/upload</br>
-* 传参(MultipartFile) file,username</br>
+* 传参(MultipartFile) file,username，(int)usage</br>
 * 返回值(json) result{"success","fail"},url,filename</br>
 * */</br>
 </br>
