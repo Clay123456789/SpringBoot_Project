@@ -6,6 +6,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
+import com.javaspring.myproject.beans.Record;
+import com.javaspring.myproject.dao.IRecordDao;
 import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.*;
 import org.jsoup.Connection;
@@ -47,6 +49,7 @@ public class MainController {
     //绑定文件上传路径到uploadPath
     @Value("${web.upload-path}")
     private String uploadPath;
+    private Record record_x=new Record("test","22222","2021/9/7 08:40");
 
     @Autowired
     private IUserService userService;
@@ -56,6 +59,9 @@ public class MainController {
     private IBlogService blogService;
     @Autowired
     private IFileService fileService;
+    @Autowired
+    private IRecordService recordService;
+
 
     //测试接口--home
 
@@ -508,8 +514,90 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
 
+   
 
-    /*以下为测试接口*/
+  
+    /*
+    * 上传备忘录的记录
+    * 路径：/api/recordUpload
+    * 传参(json):username,context,date_
+    * 返回值(String)：Result{"插入记录成功！","插入记录失败！"}
+    * */
+    @CrossOrigin
+    @PostMapping(value="/api/recordUpload")
+    @ResponseBody
+    public Result recordUpload(@Valid @RequestBody Record record){
+        Record record1=null;
+        recordService.insertRecord(record);
+        record1=recordService.getRecord(record);
+        if(record1!=null){
+            return ResultFactory.buildSuccessResult("插入记录成功！");
+        }
+        else{
+            return ResultFactory.buildFailResult("插入记录失败！");
+        }
+    }
+
+    /*
+     * 删除备忘录的记录
+     * 路径：/api/deleteRecord
+     * 传参(json):username,context(可为空),date_
+     * 返回值(String)：Result{"删除记录失败!","删除记录成功！"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/deleteRecord")
+    @ResponseBody
+    public Result recordDelete(@Valid @RequestBody Record record){
+        if(!recordService.deleteRecord(record)){
+            return ResultFactory.buildFailResult("删除记录失败!");
+        }
+        else{
+            return ResultFactory.buildSuccessResult("删除记录成功！");
+        }
+    }
+
+    /*
+     * 修改备忘录的记录
+     * 路径：/api/updateRecord
+     * 传参(json):username,context,date_
+     * 返回值(String)：Result{"更新记录成功!","更新记录失败!"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/updateRecord")
+    @ResponseBody
+    public Result recordUpdate(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);  //更新前
+        recordService.updateRecord(record);
+        Record record2=recordService.getRecord(record);  //更新后
+        if(!record1.equals(record2.getContext())) {
+            return ResultFactory.buildSuccessResult("更新记录成功!");
+        }
+        else{
+            return ResultFactory.buildFailResult("更新记录失败!");
+        }
+    }
+
+  
+    /*
+     * 获取备忘录的记录
+     * 路径：/api/getRecord
+     * 传参(json):username,context,date_
+     * 返回值(json): username,context,date_
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/getRecord")
+    @ResponseBody
+    public String recordGet(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);
+        Map<String,Object> map=new HashMap<>();
+        map.put("username",record1.getUsername());
+        map.put("context",record1.getContext());
+        map.put("date_",record1.getDate_());
+        return JSON.toJSONString(map);
+    }
+  
+  
+   /*以下为测试接口*/
     /*//测试接口--jwxt_login
     @RequestMapping("/jwxt_login")
     public String jwxt_login(){
@@ -755,6 +843,4 @@ public class MainController {
         System.out.println(pwd);*/
         Header header =getMethod.getResponseHeader("Set-Cookie");
 
-
-    }
 }
