@@ -10,7 +10,10 @@ public interface IBlogDao {
     boolean deleteBlog(Blog blog);
     void updateBlog (Blog blog);
     Blog getBlog (Blog blog);
-
+    //以发布时间从新到旧获取个人博客
     List<Blog> getAllBlogs(Blog blog);
+    //以发布时间从新到旧获取所有公开博客
     List<Blog> getPublicBlogs();
+    List<Blog> getAllHotBlogs(Blog blog);
+    List<Blog> getPublicHotBlogs();
 }

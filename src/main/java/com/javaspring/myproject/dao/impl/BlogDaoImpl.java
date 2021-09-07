@@ -10,6 +10,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
@@ -42,6 +45,7 @@ public class BlogDaoImpl implements IBlogDao {
         jdbcTemplate.update(sql,blog.getTime_(),blog.getTitle(),blog.getContent(),blog.getPicture(),blog.getVisible(),blog.getBlogid());
     }
 
+
     @Override
     public Blog getBlog(Blog blog) {
         RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
@@ -70,4 +74,55 @@ public class BlogDaoImpl implements IBlogDao {
 
         return blogList;
     }
+    //按自定义的热度对自己的博客进行排序输出
+    @Override
+    public List<Blog> getAllHotBlogs(Blog blog) {
+        RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
+        List<Blog> blogList = jdbcTemplate.query("select * from blog where username = ? order by time_ DESC ",rowMapper,blog.getUsername());
+        //外加的比较方法,也可以选择在Bolg类中实现Compare接口而使用内部比较方法
+        Collections.sort(blogList, new Comparator<Blog>() {
+            @Override
+            public int compare(Blog o1, Blog o2) {
+                //t为时间热度，c为点赞热度，二者共同构成最终热度hot
+                long t1=0,t2=0;
+                try {
+                    t1 = o1.getTimeValue(o1.getTime_());
+                    t2 = o2.getTimeValue(o2.getTime_());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                int centPerLike = 144;
+                long c1=o1.getCount()*centPerLike;
+                long c2=o2.getCount()*centPerLike;
+                // 除1000除60得到分钟数，进行一定的加权得到热度值hot
+                return (int) -((t1-t2)*0.3/1000/60+(c1-c2)*0.7);
+            }
+        });
+        return blogList;
+    }
+    //按自定义的热度对公开的博客进行排序输出
+    @Override
+    public List<Blog> getPublicHotBlogs() {
+        RowMapper<Blog> rowMapper = new BeanPropertyRowMapper<Blog>(Blog.class);
+        List<Blog> blogList = jdbcTemplate.query("select * from blog where visible = '1' order by time_ DESC ",rowMapper);
+        Collections.sort(blogList, new Comparator<Blog>() {
+            @Override
+            public int compare(Blog o1, Blog o2) {
+                long t1=0,t2=0;
+                try {
+                    t1 = o1.getTimeValue(o1.getTime_());
+                    t2 = o2.getTimeValue(o2.getTime_());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                int centPerLike = 144;
+                long c1=o1.getCount()*centPerLike;
+                long c2=o2.getCount()*centPerLike;
+                return (int) -((t1-t2)*0.3/1000/60+(c1-c2)*0.7);
+            }
+        });
+        return blogList;
+    }
+
+
 }

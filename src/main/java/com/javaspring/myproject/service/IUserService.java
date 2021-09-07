@@ -11,6 +11,7 @@ public interface IUserService {
     int deleteUser(String username);
     User getUser(String username);
     User getUserByEmail(String email);
+    String getUserTouxiang(String username);
     //根据Username/EMail及密码判断用户是否存在
     boolean judgeByUserName(UserVo userVo);
     boolean judgeByEMail(UserVo userVo);

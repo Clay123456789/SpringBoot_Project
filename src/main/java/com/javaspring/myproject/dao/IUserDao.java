@@ -11,6 +11,8 @@ public interface IUserDao {
     User getUser(String username);
     //以邮箱锁定到操作对象
     User getUserByEmail(String email);
+    //获取头像url
+    String getUserTouxiang(String username);
     //根据Username/EMail及密码判断用户是否存在
     boolean judgeByUserName(User user);
     boolean judgeByEMail(User user);

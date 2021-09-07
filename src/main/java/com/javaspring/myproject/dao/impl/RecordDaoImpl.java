@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class RecordDaoImpl implements IRecordDao {
 
@@ -38,12 +40,22 @@ public class RecordDaoImpl implements IRecordDao {
     }
 
     @Override
-    public Record getRecord(Record record) {
+    public List<Record> getRecord(Record record) {
+
+        String sql = "select * from record where username=? order by date_";
+        RowMapper<Record> rowMapper = new BeanPropertyRowMapper<Record>(Record.class);
+        List<Record> recordList = jdbcTemplate.query(sql, rowMapper, record.getUsername());
+
+        return recordList;
+    }
+
+    @Override
+    public Record getRecordin(Record record) {
         String sql="select * from record where username=? and date_=?";
-        RowMapper<Record> rowMapper=new BeanPropertyRowMapper<Record>(Record.class);
+        RowMapper<Record> recordRowMapper=new BeanPropertyRowMapper<Record>(Record.class);
         Object result=null;
         try{
-            result=jdbcTemplate.queryForObject(sql,rowMapper,record.getUsername(),record.getDate_());
+            result=jdbcTemplate.queryForObject(sql,recordRowMapper,record.getUsername(),record.getDate_());
         }catch (EmptyResultDataAccessException e){
             return null;
         }
