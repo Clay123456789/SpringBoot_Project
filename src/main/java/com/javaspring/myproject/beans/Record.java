@@ -7,7 +7,7 @@ public class Record {
 
     Record(){
     }
-    Record(String username,String context,String date_){
+    public Record(String username, String context, String date_){
         this.username=username;
         this.context=context;
         this.date_=date_;

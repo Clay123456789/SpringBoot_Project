@@ -43,7 +43,7 @@ public class RecordDaoImpl implements IRecordDao {
         RowMapper<Record> rowMapper=new BeanPropertyRowMapper<Record>(Record.class);
         Object result=null;
         try{
-            result=jdbcTemplate.query(sql,rowMapper,record.getUsername(),record.getDate_());
+            result=jdbcTemplate.queryForObject(sql,rowMapper,record.getUsername(),record.getDate_());
         }catch (EmptyResultDataAccessException e){
             return null;
         }

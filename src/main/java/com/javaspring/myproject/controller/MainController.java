@@ -32,6 +32,7 @@ public class MainController {
     //绑定文件上传路径到uploadPath
     @Value("${web.upload-path}")
     private String uploadPath;
+    private Record record_x=new Record("test","22222","2021/9/7 08:40");
 
     @Autowired
     private IUserService userService;
@@ -567,10 +568,10 @@ public class MainController {
     @PostMapping(value="/api/updateRecord")
     @ResponseBody
     public Result recordUpdate(@Valid @RequestBody Record record){
-        Record record1=recordService.getRecord(record);
+        Record record1=recordService.getRecord(record);  //更新前
         recordService.updateRecord(record);
-        Record record2= recordService.getRecord(record);
-        if(!record1.getContext().equals(record2.getContext())){
+        Record record2=recordService.getRecord(record);  //更新后
+        if(!record1.equals(record2.getContext())) {
             return ResultFactory.buildSuccessResult("更新记录成功!");
         }
         else{
