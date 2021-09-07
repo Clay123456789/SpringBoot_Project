@@ -5,8 +5,6 @@ import com.javaspring.myproject.beans.UserVo;
 import com.javaspring.myproject.dao.IUserDao;
 import com.javaspring.myproject.dao.impl.UserVoToUser;
 import com.javaspring.myproject.service.IEMailService;
-import org.apache.ibatis.annotations.Mapper;
-import org.springframework.context.annotation.Primary;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +33,7 @@ public class EMailServiceImpl implements IEMailService {
     public boolean sendMimeMail( String email, HttpSession session) {
 
         //该邮箱已经注册
-        if(userDao.getUser(new User(email))!=null){
+        if(userDao.getUserByEmail(new User(email).getEmail())!=null){
             return false;
         }
         try {
@@ -105,12 +103,12 @@ public class EMailServiceImpl implements IEMailService {
     }
     @Override
     public boolean findPassword_sendEmail(String email) {
-        if(userDao.getUser(new User(email))!=null){
+        if(userDao.getUserByEmail(new User(email).getEmail())!=null){
             try {
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 mailMessage.setSubject("找回密码邮件");//主题
                 //保存密码
-                String password=userDao.getUser(new User(email)).getPassword();
+                String password=userDao.getUserByEmail(new User(email).getEmail()).getPassword();
                 mailMessage.setText("您的密码是："+ password);
 
                 mailMessage.setTo(email);//发给谁
@@ -130,13 +128,13 @@ public class EMailServiceImpl implements IEMailService {
 
     @Override
     public boolean changePassword(String email,String oldPassword,String newPassword,String newPasswordRepeat) {
-        User tempUser=userDao.getUser(new User(email));
+        User tempUser=userDao.getUserByEmail(new User(email).getEmail());
         if(tempUser!=null && tempUser.getPassword().equals(oldPassword) && newPassword.equals(newPasswordRepeat)){
             if(userDao.updatePassword(newPassword,email)>0){
                 SimpleMailMessage mailMessage = new SimpleMailMessage();
                 mailMessage.setSubject("修改密码邮件");//主题
                 //保存密码
-                String password=userDao.getUser(new User(email)).getPassword();
+                String password=userDao.getUserByEmail(new User(email).getEmail()).getPassword();
                 mailMessage.setText("您的新密码是："+ password);
 
                 mailMessage.setTo(email);//发给谁
@@ -155,41 +153,14 @@ public class EMailServiceImpl implements IEMailService {
 
     @Override
     public boolean updateEmail(UserVo userVo) {
-        //获取调用前最新的验证码
-        String code = (String) httpSession.getAttribute("code");
-
-        //获取表单中的提交的验证码
-        String voCode = userVo.getCode();
-        //验证码正确
-        if(code.equals(voCode))
-        {
             User user = UserVoToUser.toUser(userVo);
             return userDao.updateEmail(user,userVo.getNewEmail());
-        }
-        //验证码错误
-        else
-        {
-            return false;
-        }
+
     }
 
     @Override
     public boolean updateUserName(UserVo userVo) {
-        //获取调用前最新的验证码
-        String code = (String) httpSession.getAttribute("code");
-
-        //获取表单中的提交的验证码
-        String voCode = userVo.getCode();
-        //验证码正确
-        if(code.equals(voCode))
-        {
-            User user = UserVoToUser.toUser(userVo);
-            return userDao.updateUserName(user,userVo.getNewUserName());
-        }
-        //验证码错误
-        else
-        {
-            return false;
-        }
+        User user = UserVoToUser.toUser(userVo);
+        return userDao.updateUserName(user, userVo.getNewUsername());
     }
 }
