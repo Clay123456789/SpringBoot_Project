@@ -1,27 +1,45 @@
 package com.javaspring.myproject.controller;
-
-
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import com.alibaba.fastjson.JSON;
 import com.javaspring.myproject.beans.*;
+import com.javaspring.myproject.beans.Record;
+import com.javaspring.myproject.dao.IRecordDao;
 import com.javaspring.myproject.dao.impl.ResultFactory;
-import com.javaspring.myproject.dao.impl.UserVoToUser;
 import com.javaspring.myproject.service.*;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static java.lang.Integer.parseInt;
+import static org.hibernate.loader.internal.AliasConstantsHelper.get;
 
 @EnableAutoConfiguration
 @RestController
@@ -31,6 +49,7 @@ public class MainController {
     //绑定文件上传路径到uploadPath
     @Value("${web.upload-path}")
     private String uploadPath;
+    private Record record_x=new Record("test","22222","2021/9/7 08:40");
 
     @Autowired
     private IUserService userService;
@@ -41,7 +60,12 @@ public class MainController {
     @Autowired
     private IFileService fileService;
     @Autowired
+
     private IUserLikeService userLikeService;
+
+    private IRecordService recordService;
+
+
     //测试接口--home
 
     @RequestMapping("/home")
@@ -569,13 +593,7 @@ public class MainController {
     @PostMapping(value ="/api/updateBlog")
     @ResponseBody
     public Result updateBlog(@Valid @RequestBody Blog blog){
-        for (int i = 0; i < 100; i++) {
-            System.out.println("blog:"+blog.toString());
-        }
         Blog blog1=blogService.getBlog(blog);
-        for (int i = 0; i < 100; i++) {
-            System.out.println("blog1:"+blog1.toString());
-        }
         if(blog1!=null&&blog1.getUsername().equals(blog.getUsername())){
             blogService.updateBlog(blog);
         }else{
@@ -584,6 +602,7 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
+
     /*
      * 点赞逻辑
      * 路径 /api/giveALike
@@ -601,6 +620,337 @@ public class MainController {
         }
     }
 
+
+
+
+   
+
+  
+    /*
+    * 上传备忘录的记录
+    * 路径：/api/recordUpload
+    * 传参(json):username,context,date_
+    * 返回值(String)：Result{"插入记录成功！","插入记录失败！"}
+    * */
+    @CrossOrigin
+    @PostMapping(value="/api/recordUpload")
+    @ResponseBody
+    public Result recordUpload(@Valid @RequestBody Record record){
+        Record record1=null;
+        recordService.insertRecord(record);
+        record1=recordService.getRecord(record);
+        if(record1!=null){
+            return ResultFactory.buildSuccessResult("插入记录成功！");
+        }
+        else{
+            return ResultFactory.buildFailResult("插入记录失败！");
+        }
+    }
+
+    /*
+     * 删除备忘录的记录
+     * 路径：/api/deleteRecord
+     * 传参(json):username,context(可为空),date_
+     * 返回值(String)：Result{"删除记录失败!","删除记录成功！"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/deleteRecord")
+    @ResponseBody
+    public Result recordDelete(@Valid @RequestBody Record record){
+        if(!recordService.deleteRecord(record)){
+            return ResultFactory.buildFailResult("删除记录失败!");
+        }
+        else{
+            return ResultFactory.buildSuccessResult("删除记录成功！");
+        }
+    }
+
+    /*
+     * 修改备忘录的记录
+     * 路径：/api/updateRecord
+     * 传参(json):username,context,date_
+     * 返回值(String)：Result{"更新记录成功!","更新记录失败!"}
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/updateRecord")
+    @ResponseBody
+    public Result recordUpdate(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);  //更新前
+        recordService.updateRecord(record);
+        Record record2=recordService.getRecord(record);  //更新后
+        if(!record1.equals(record2.getContext())) {
+            return ResultFactory.buildSuccessResult("更新记录成功!");
+        }
+        else{
+            return ResultFactory.buildFailResult("更新记录失败!");
+        }
+    }
+
+  
+    /*
+     * 获取备忘录的记录
+     * 路径：/api/getRecord
+     * 传参(json):username,context,date_
+     * 返回值(json): username,context,date_
+     * */
+    @CrossOrigin
+    @PostMapping(value="/api/getRecord")
+    @ResponseBody
+    public String recordGet(@Valid @RequestBody Record record){
+        Record record1=recordService.getRecord(record);
+        Map<String,Object> map=new HashMap<>();
+        map.put("username",record1.getUsername());
+        map.put("context",record1.getContext());
+        map.put("date_",record1.getDate_());
+        return JSON.toJSONString(map);
+    }
+  
+  
+   /*以下为测试接口*/
+    /*//测试接口--jwxt_login
+    @RequestMapping("/jwxt_login")
+    public String jwxt_login(){
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        MultiValueMap<String, String> postParameters = new LinkedMultiValueMap<String, String>();
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(postParameters, headers);
+        String dataStr= restTemplate.postForObject("https://jwgl.bupt.edu.cn/Logon.do?method=logon&flag=sess", requestEntity, String.class);
+        String scode=dataStr.split("#")[0];
+        String sxh=dataStr.split("#")[1];
+        String code="2019211996"+"%%%"+"JYX014524jyx";//账号密码
+        String encoded="";
+        for(int i=0;i<code.length();i++){
+            if(i<20){
+                encoded=encoded+code.substring(i,i+1)+scode.substring(0,parseInt(sxh.substring(i,i+1)));
+                scode = scode.substring(parseInt(sxh.substring(i,i+1)));
+            }else{
+                encoded=encoded+code.substring(i);
+                i=code.length();
+            }
+        }
+        for (int i = 0; i <100 ; i++) {
+
+            System.out.println(dataStr+"       "+encoded);
+        }
+        //登陆
+        RestTemplate restTemplate1 = new RestTemplate();
+
+        HttpHeaders headers1 = new HttpHeaders();
+        MultiValueMap<String, String> postParameters1 = new LinkedMultiValueMap<String, String>();
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity1 = new HttpEntity<MultiValueMap<String, String>>(postParameters1, headers1);
+
+        postParameters.add("userAccount","2019211996");
+        postParameters.add("userPassword","JYX014524jyx");
+        return restTemplate1.postForObject("/Logon.do?method=logonByDxfz", requestEntity1, String.class);
+    }*/
+
+  /*
+  *qqmail_alias=2019211996@bupt.edu.cn; SERVERID=131; JSESSIONID=4E9AE8E8A099F7D73D428399B75F30CD
+        postParameters.add("RANDOMCODE","");
+        postParameters.add("encoded",encoded);
+  *
+  * */
+
+//all static for convenience
+
+    //file request parameters
+    static String userAccount = "2019211996";        //你的账号
+    static String userPassword = "JYX014524jyx";          //你的密码
+    static String RANDOMCODE = "";            //验证码默认设置为空，后续通过用户的输入来填充这个值
+
+    //验证码请求地址
+    final static String verifyImgSrcURL = "https://jwgl.bupt.edu.cn/verifycode.servlet";//cookie
+    //验证码保存的桌面位置
+    final static String verifyImgDestURL = "C:\\Users\\86182\\Desktop\\verifyCodeImg.jpg";
+    //登陆请求的地址
+    final static String HomeUrl = "https://jwgl.bupt.edu.cn/Logon.do?method=logon&flag=sess";
+
+    final static String loginUrl = "https://jwgl.bupt.edu.cn//Logon.do?method=logon";
+    //课表的地址
+    final static String getTableBaseURL = "https://jwgl.bupt.edu.cn/jsxsd/xskb/xskb_list.do";
+
+    //cookie name
+    final static String sessionName = "JSESSIONID";
+    final static String SERVERID="SERVERID";
+    final static String qqmail_alias="qqmail_alias";
+
+    //cookie value
+    static String sessionValue = "";
+    static String SERVERIDValue = "";
+    static String qqmail_aliasValue = "";
+    //request parameters [personType, userAccount, userPassword, RANDOMCODE]
+    static Map<String, String> reqData = new HashMap<>();
+
+    static Map<String, String> cookies = new HashMap<>();       //save cookies
+
+    // 'reqData' initialization
+    static {
+        reqData.put("userAccount", userAccount);
+        reqData.put("userPassword", userPassword);
+    }
+
+    /*以下为测试接口*/
+    //测试接口--jwxt_login
+    @RequestMapping("/jwxt_login")
+    public String jwxt_login()throws IOException {
+
+        //download verifyImg and
+        //get the cookie we getfrom the img
+        //use the cookie everywhere around the site.
+        downloadImg(verifyImgSrcURL, verifyImgDestURL);
+        System.out.println("Download Image Successfully");
+
+        //print cookie
+        System.out.println(cookies);
+
+        //input verifycode
+        System.out.print("Please input your verifyCode: ");
+        RANDOMCODE = new Scanner(System.in).nextLine();
+        reqData.put("RANDOMCODE", RANDOMCODE);
+
+        //login using cookie prepared.
+        Connection loginConn = Jsoup.connect(HomeUrl);
+        Connection.Response loginResponse = loginConn.execute();
+        String dataStr= loginResponse.body();
+        String scode=dataStr.split("#")[0];
+        String sxh=dataStr.split("#")[1];
+        String code=userAccount+"%%%"+userPassword;//账号密码
+        String encoded="";
+        for(int i=0;i<code.length();i++){
+            if(i<20){
+                encoded=encoded+code.substring(i,i+1)+scode.substring(0,parseInt(sxh.substring(i,i+1)));
+                scode = scode.substring(parseInt(sxh.substring(i,i+1)));
+            }else{
+                encoded=encoded+code.substring(i);
+                i=code.length();
+            }
+        }
+        reqData.put("encoded", encoded);
+        System.out.println(encoded);
+
+
+        Connection loginConn_ = Jsoup.connect(loginUrl);
+        for (int i = 0; i < 100; i++) {
+
+            System.out.println(cookies);
+        }
+
+        //login using cookies
+       /* Cookie cookie1 = new Cookie(sessionName, sessionValue);
+        cookie1.setPath("/jsxsd/");
+        cookie1.setDomain("jwgl.bupt.edu.cn");
+        cookie1.isHttpOnly();*/
+        loginConn_.cookie(SERVERID,  SERVERIDValue);
+        loginConn_.cookie(qqmail_alias,  qqmail_aliasValue);
+        loginConn_.cookie(sessionName,  sessionValue);
+        //login parameters
+        loginConn_.data(reqData);
+
+        //try to login
+        loginConn_.execute();
+        //获取课表
+        /*Connection getTableiConn = Jsoup.connect(getTableBaseURL);
+
+        getTableiConn.cookie(SERVERID,  SERVERIDValue);
+        getTableiConn.cookie(qqmail_alias,  qqmail_aliasValue);
+        getTableiConn.cookie(sessionName,  sessionValue);*/
+        Connection.Response getTableResponse = loginConn_.execute();
+        return getTableResponse.body();
+        //。。。未完，看下面分析
+    }
+
+    // download verifyCode image from 'srcUrl' and save to 'dest' at localhost
+    private static void downloadImg(String srcUrl, String dest) throws MalformedURLException, IOException {
+        //get image using the cookie
+        HttpURLConnection imgConn = (HttpURLConnection) (new URL(srcUrl)).openConnection();
+        //get the cookie
+        Map header = imgConn.getHeaderFields();
+        //这里通过获取每一个Cookie，然后根据实际需要，获取token、JSESSIONID等信息
+        List<String> cookielist=((List<String>)header.get("Set-Cookie"));
+        for (int i = 0; i <100 ; i++) {
+            System.out.println(cookielist);
+        }
+        String str1 =cookielist.get(0);
+        String str2 =cookielist.get(1);
+        SERVERIDValue =str1.substring( str1.indexOf('=') + 1, str1.indexOf(';') );
+        sessionValue =str2.substring(10,str2.indexOf(';'));
+        qqmail_aliasValue = userAccount+"@bupt.edu.cn";
+        cookies.put( sessionName,  sessionValue );
+        cookies.put( SERVERID,  SERVERIDValue );
+        cookies.put( qqmail_alias,  qqmail_aliasValue );
+
+        //new input from network( 'imgConn' )
+        try (BufferedInputStream imgInputStream = new BufferedInputStream(imgConn.getInputStream())) {
+            //new output to local file system
+            try (BufferedOutputStream imgOutputStream = new BufferedOutputStream(new FileOutputStream(dest));) {
+                byte[] buf = new byte[1024];
+                while (-1 != (imgInputStream.read(buf)))
+                    imgOutputStream.write(buf);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+/*
+    private static void GetCookie(String srcUrl) throws IOException {
+        //get image using the cookie
+        HttpURLConnection imgConn = (HttpURLConnection) ( new URL(srcUrl) ).openConnection();
+        imgConn.connect();
+
+        //get the cookie
+        Map header = imgConn.getHeaderFields();
+        //这里通过获取每一个Cookie，然后根据实际需要，获取token、JSESSIONID等信息
+        List<String> cookielist=((List<String>)header.get("Set-Cookie"));
+        for (int i = 0; i <100 ; i++) {
+            System.out.println(cookielist);
+           System.out.println(cookie1);
+            System.out.println(cookie2);
+            System.out.println(cookie3);
+        }
+        String str1 =cookielist.get(0);
+        String str2 =cookielist.get(1);
+        SERVERIDValue =str1.substring( str1.indexOf('=') + 1, str1.indexOf(';') );
+        sessionValue ="63F4FE0FA39859E1F07A38F72E65818E";
+        //sessionValue =str2.substring(10,str2.indexOf(';'));
+        qqmail_aliasValue = userAccount+"@bupt.edu.cn";
+        cookies.put( sessionName,  sessionValue );
+        cookies.put( SERVERID,  SERVERIDValue );
+        cookies.put( qqmail_alias,  qqmail_aliasValue );
+
+    }
+    */
+    private void GetCookie(String srcUrl) throws IOException {
+        //时间戳
+        HttpClient client = new HttpClient();
+        //post请求方式
+        GetMethod getMethod= new GetMethod(srcUrl);
+        /*PostMethod postMethod = new PostMethod(srcUrl);
+        //推荐的数据存储方式,类似key-value形式
+       NameValuePair telPair = new NameValuePair();
+        telPair.setName("tel");
+        telPair.setValue("181****0732");
+        NameValuePair pwdPair = new NameValuePair("pwd","a123456");
+        //封装请求参数
+        postMethod.setRequestBody(new NameValuePair[]{null});
+        //这里是设置请求内容为json格式,根据站点的格式决定
+        //因为这个网站会将账号密码转为json格式,所以需要这一步
+        postMethod.setRequestHeader("Content_Type","application/json");
+        //执行请求*/
+        getMethod.setRequestHeader("Content_Type","application/json");
+        client.executeMethod(getMethod);
+        //通过Post/GetMethod对象获取响应头信息
+        /*String cookie = postMethod.getResponseHeader("Set-Cookie").getValue();
+        //截取需要的内容
+        String sub = cookie.substring(cookie.indexOf("&"), cookie.lastIndexOf("&"));
+        String[] splitPwd = sub.split("=");
+        String pwd = splitPwd[1];
+        System.out.println(pwd);*/
+        Header header =getMethod.getResponseHeader("Set-Cookie");
 
 
 }

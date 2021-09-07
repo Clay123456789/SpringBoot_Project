@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+      xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+      xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>interface</title>
@@ -168,11 +170,40 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 /*</br>
+
 * 点赞逻辑</br>
 * 路径 /api/giveALike</br>
 * 传参(json):username, blogid，type（当前只支持type为1且默认为1，故此参数不用添加）</br>
 * 返回值: null</br>
 * 功能：给喜欢的博客点赞</br>
 * */</br>
+
+* 上传备忘录的记录</br>
+* 路径：/api/recordUpload</br>
+* 传参(json):username,context,date_</br>
+* 返回值(String)：Result{"插入记录成功！","插入记录失败！"}</br>
+* */</br>
+</br>
+/*</br>
+* 删除备忘录的记录</br>
+* 路径：/api/deleteRecord</br>
+* 传参(json):username,context(可为空),date_</br>
+* 返回值(String)：Result{"删除记录失败!","删除记录成功！"}</br>
+* */</br>
+</br>
+/*</br>
+* 修改备忘录的记录</br>
+* 路径：/api/updateRecord</br>
+* 传参(json):username,context,date_</br>
+* 返回值(String)：Result{"更新记录成功!","更新记录失败!"}</br>
+* */</br>
+</br>
+/*</br>
+* 修改备忘录的记录</br>
+* 路径：/api/updateRecord</br>
+* 传参(json):username,context,date_</br>
+* 返回值(json): username,context,date_</br>
+* */</br>
+</br>
 </body>
 </html>
