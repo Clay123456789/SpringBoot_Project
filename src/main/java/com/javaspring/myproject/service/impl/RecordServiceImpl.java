@@ -6,6 +6,8 @@ import com.javaspring.myproject.service.IRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RecordServiceImpl implements IRecordService {
 
@@ -27,7 +29,12 @@ public class RecordServiceImpl implements IRecordService {
     }
 
     @Override
-    public Record getRecord(Record record) {
+    public List<Record> getRecord(Record record) {
         return recordDao.getRecord(record);
+    }
+
+    @Override
+    public Record getRecordin(Record record) {
+        return recordDao.getRecordin(record);
     }
 }
