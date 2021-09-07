@@ -49,7 +49,6 @@ public class MainController {
     //绑定文件上传路径到uploadPath
     @Value("${web.upload-path}")
     private String uploadPath;
-    private Record record_x=new Record("test","22222","2021/9/7 08:40");
 
     @Autowired
     private IUserService userService;
@@ -636,15 +635,12 @@ public class MainController {
     @PostMapping(value="/api/recordUpload")
     @ResponseBody
     public Result recordUpload(@Valid @RequestBody Record record){
-        Record record1=null;
         recordService.insertRecord(record);
-        record1=recordService.getRecord(record);
-        if(record1!=null){
+        Record record1=recordService.getRecordin(record);
+        if(record1.getContext().equals(record.getContext())){
             return ResultFactory.buildSuccessResult("插入记录成功！");
         }
-        else{
-            return ResultFactory.buildFailResult("插入记录失败！");
-        }
+        return ResultFactory.buildFailResult("插入记录失败！");
     }
 
     /*
@@ -675,34 +671,36 @@ public class MainController {
     @PostMapping(value="/api/updateRecord")
     @ResponseBody
     public Result recordUpdate(@Valid @RequestBody Record record){
-        Record record1=recordService.getRecord(record);  //更新前
+        Record record_old=recordService.getRecordin(record);    //更新前
         recordService.updateRecord(record);
-        Record record2=recordService.getRecord(record);  //更新后
-        if(!record1.equals(record2.getContext())) {
+        Record record_new=recordService.getRecordin(record);    //更新后
+        if(!record_new.getContext().equals(record_old.getContext())) {
             return ResultFactory.buildSuccessResult("更新记录成功!");
         }
-        else{
-            return ResultFactory.buildFailResult("更新记录失败!");
-        }
+        return ResultFactory.buildFailResult("更新记录失败！");
     }
 
   
     /*
      * 获取备忘录的记录
      * 路径：/api/getRecord
-     * 传参(json):username,context,date_
+     * 传参(json):username,context=null,date_=null
      * 返回值(json): username,context,date_
      * */
     @CrossOrigin
     @PostMapping(value="/api/getRecord")
     @ResponseBody
     public String recordGet(@Valid @RequestBody Record record){
-        Record record1=recordService.getRecord(record);
-        Map<String,Object> map=new HashMap<>();
-        map.put("username",record1.getUsername());
-        map.put("context",record1.getContext());
-        map.put("date_",record1.getDate_());
-        return JSON.toJSONString(map);
+        List<Record> Recordlist= recordService.getRecord(record);
+        List<Map<String,Object>> mapList=new ArrayList<>();
+        for(int i=0;i<Recordlist.size();i++){
+            Map<String,Object> map=new HashMap<>();
+            map.put("username",Recordlist.get(i).getUsername());
+            map.put("context",Recordlist.get(i).getContext());
+            map.put("date_",Recordlist.get(i).getDate_());
+            mapList.add(map);
+        }
+        return JSON.toJSONString((mapList));
     }
   
   
