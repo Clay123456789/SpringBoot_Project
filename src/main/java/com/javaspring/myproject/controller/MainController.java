@@ -60,6 +60,9 @@ public class MainController {
     @Autowired
     private IFileService fileService;
     @Autowired
+
+    private IUserLikeService userLikeService;
+
     private IRecordService recordService;
 
 
@@ -210,7 +213,33 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("修改成功,修改后密码已发送至您的邮箱，请确认！");
     }
-
+    /*
+     * 获取用户头像url
+     * 路径 /api/getUserTouxiang
+     * 传参(json):username/email
+     * 返回值(String) url
+     * 功能：登陆时加载用户头像
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getUserTouxiang")
+    @ResponseBody
+    public String getUserTouxiang(@Valid @RequestBody User user){
+        System.out.println(userService.getUserTouxiang(user.getUsername()));
+        return userService.getUserTouxiang(user.getUsername());
+    }
+    /*
+     * 获取用户信息
+     * 路径 /api/getUser
+     * 传参(json):username/email
+     * 返回值(json) 一个完整的User类实例
+     * 功能：得到用户信息
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getUser")
+    @ResponseBody
+    public User getUser(@Valid @RequestBody User user) {
+        return userService.getUser(user.getUsername());
+    }
     /*
      * 修改用户信息
      * 路径 /api/updateUser
@@ -396,7 +425,7 @@ public class MainController {
      * 获取blog
      * 路径 /api/getBlog
      * 传参(json) blogid
-     * 返回值(json) blogid,username,time_,title,content,picture,visible
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getBlog")
@@ -420,7 +449,7 @@ public class MainController {
      * 获取blogs
      * 路径 /api/getAllBlogs
      * 传参(json) username
-     * 返回值(json) blogid,username,time_,title,content,picture,visible
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getAllBlogs")
@@ -438,6 +467,7 @@ public class MainController {
             map.put("content",bloglist.get(i).getContent());
             map.put("picture",bloglist.get(i).getPicture());
             map.put("visiable",bloglist.get(i).getVisible());
+            map.put("count",bloglist.get(i).getCount());
             maplist.add(map);
         }
 
@@ -449,7 +479,7 @@ public class MainController {
      * 获取公开的所有人blogs
      * 路径 /api/getPublicBlogs
      * 传参   null
-     * 返回值(json) blogid,username,time_,title,content,picture
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getPublicBlogs")
@@ -466,12 +496,71 @@ public class MainController {
             map.put("title",bloglist.get(i).getTitle());
             map.put("content",bloglist.get(i).getContent());
             map.put("picture",bloglist.get(i).getPicture());
+            map.put("count",bloglist.get(i).getCount());
             maplist.add(map);
         }
 
         return JSON.toJSONString(maplist);
     }
+    /*
+     * 以热度顺序获取blogs
+     * 路径 /api/getAllHotBlogs
+     * 传参(json):username
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
+     * 功能：以热度从高到低的顺序浏览自己的博客
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getAllHotBlogs")
+    @ResponseBody
+    public String getAllHotBlogs(@Valid @RequestBody Blog blog) {
+        List<Blog> bloglist=blogService.getAllHotBlogs(blog);
+        List<Map<String,Object>> maplist=new ArrayList<>();
+        for (int i = 0; i < bloglist.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
 
+            map.put("blogid",bloglist.get(i).getBlogid());
+            map.put("username",bloglist.get(i).getUsername());
+            map.put("time_",bloglist.get(i).getTime_());
+            map.put("title",bloglist.get(i).getTitle());
+            map.put("content",bloglist.get(i).getContent());
+            map.put("picture",bloglist.get(i).getPicture());
+            map.put("visiable",bloglist.get(i).getVisible());
+            map.put("count",bloglist.get(i).getCount());
+            maplist.add(map);
+        }
+
+        return JSON.toJSONString(maplist);
+
+    }
+    /*
+     * 以热度顺序获取公开的blogs
+     * 路径 /api/getPublicHotBlogs
+     * 传参: null
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
+     * 功能：以热度从高到低的顺序浏览公开的博客
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/getPublicHotBlogs")
+    @ResponseBody
+    public String getPublicHotBlogs() {
+        List<Blog> bloglist=blogService.getPublicHotBlogs();
+        List<Map<String,Object>> maplist=new ArrayList<>();
+        for (int i = 0; i < bloglist.size(); i++) {
+            Map<String,Object> map=new HashMap<>();
+
+            map.put("blogid",bloglist.get(i).getBlogid());
+            map.put("username",bloglist.get(i).getUsername());
+            map.put("time_",bloglist.get(i).getTime_());
+            map.put("title",bloglist.get(i).getTitle());
+            map.put("content",bloglist.get(i).getContent());
+            map.put("picture",bloglist.get(i).getPicture());
+            map.put("visiable",bloglist.get(i).getVisible());
+            map.put("count",bloglist.get(i).getCount());
+            maplist.add(map);
+        }
+
+        return JSON.toJSONString(maplist);
+    }
     /*
      * 删除blog
      * 路径 /api/deleteBlog
@@ -513,6 +602,26 @@ public class MainController {
         }
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
+
+    /*
+     * 点赞逻辑
+     * 路径 /api/giveALike
+     * 传参(json):username, blogid，type（当前只支持type为1且默认为1，故此参数不用添加）
+     * 返回值: null
+     * 功能：给喜欢的博客点赞
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/giveALike")
+    @ResponseBody
+    public void giveALike(@Valid @RequestBody UserLike userLike)
+    {
+        if (!userLikeService.giveALike(userLike)) {
+            String message = String.format("系统繁忙，请稍后");
+        }
+    }
+
+
+
 
    
 
@@ -842,5 +951,6 @@ public class MainController {
         String pwd = splitPwd[1];
         System.out.println(pwd);*/
         Header header =getMethod.getResponseHeader("Set-Cookie");
+
 
 }

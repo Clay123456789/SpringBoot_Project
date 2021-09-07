@@ -65,6 +65,20 @@ public class UserDaoImpl implements IUserDao {
             return null;
         }
     }
+    //单独返回头像的url值，其实是个冗余方法
+    @Override
+    public String getUserTouxiang(String username) {
+        RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
+        //如果使用该email查询不到或者查询到多条（后者不会发生），会抛出查询异常
+        try {
+            User user = jdbcTemplate.queryForObject("select * from user where username = ?" , rowMapper, username);
+            return user.getTouxiang();
+        } catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+            System.out.println("wrong username: "+username+"or he/she does not have a touxiang, please check out and try again! ");
+            return null;
+        }
+    }
 
     @Override
     public List<User> getAllUsers() {

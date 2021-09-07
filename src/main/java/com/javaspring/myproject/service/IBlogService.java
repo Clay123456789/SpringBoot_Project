@@ -12,5 +12,7 @@ public interface IBlogService {
     Blog getBlog (Blog blog);
     List<Blog> getAllBlogs(Blog blog);
     List<Blog> getPublicBlogs();
+    List<Blog> getAllHotBlogs(Blog blog);
+    List<Blog> getPublicHotBlogs();
 
 }

@@ -58,6 +58,21 @@ url=http://IP:8008/xxx</br>
 * 返回值 Result</br>
 * */
 </br>
+/*</br>
+* 获取用户头像url</br>
+* 路径 /api/getUserTouxiang</br>
+* 传参(json):username/email</br>
+* 返回值(String) url</br>
+* 功能：登陆时加载用户头像</br>
+* */</br>
+</br>
+/*</br>
+* 获取用户信息</br>
+* 路径 /api/getUser</br>
+* 传参(json):username/email</br>
+* 返回值(json) 一个完整的User类实例</br>
+* 功能：得到用户信息</br>
+* */</br>
 </br>
 /*</br>
 * 上传file</br>
@@ -122,6 +137,21 @@ url=http://IP:8008/xxx</br>
 * 返回值(json) blogid,username,time_,title,content,picture</br>
 * */</br>
 </br>
+/*</br>
+* 以热度顺序获取blogs</br>
+* 路径 /api/getAllHotBlogs</br>
+* 传参(json):username</br>
+* 返回值(json) blogid,username,time_,title,content,picture,count,visible</br>
+* 功能：以热度从高到低的顺序浏览自己的博客</br>
+* */</br>
+</br>
+/*</br>
+* 以热度顺序获取公开的blogs</br>
+* 路径 /api/getPublicHotBlogs</br>
+* 传参: null</br>
+* 返回值(json) blogid,username,time_,title,content,picture,count,visible</br>
+* 功能：以热度从高到低的顺序浏览公开的博客</br>
+* */</br>
 </br>
 /*</br>
 * 删除blog</br>
@@ -140,6 +170,14 @@ url=http://IP:8008/xxx</br>
 * */</br>
 </br>
 /*</br>
+
+* 点赞逻辑</br>
+* 路径 /api/giveALike</br>
+* 传参(json):username, blogid，type（当前只支持type为1且默认为1，故此参数不用添加）</br>
+* 返回值: null</br>
+* 功能：给喜欢的博客点赞</br>
+* */</br>
+
 * 上传备忘录的记录</br>
 * 路径：/api/recordUpload</br>
 * 传参(json):username,context,date_</br>
