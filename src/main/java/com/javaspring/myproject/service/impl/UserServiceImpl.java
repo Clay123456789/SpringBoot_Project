@@ -38,6 +38,12 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public String getUserTouxiang(String username) {
+
+        return userDao.getUserTouxiang(username);
+    }
+
+    @Override
     public boolean judgeByUserName(UserVo userVo) {
         return userDao.judgeByUserName(UserVoToUser.toUser(userVo));
     }
