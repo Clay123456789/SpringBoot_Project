@@ -10,12 +10,20 @@ import com.javaspring.myproject.beans.Record;
 import com.javaspring.myproject.dao.IRecordDao;
 import com.javaspring.myproject.dao.impl.ResultFactory;
 import com.javaspring.myproject.service.*;
+import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -828,36 +836,58 @@ public class MainController {
         }
         reqData.put("encoded", encoded);
         System.out.println(encoded);
+        Connection connect = Jsoup.connect(loginUrl);
+        Map<String, String> header = new HashMap<String, String>();
+        header.put("GET", "http://www.baidu.com");
+        header.put("User-Agent", "	Mozilla/5.0 (Windows NT 6.1; WOW64; rv:5.0) Gecko/20100101 Firefox/5.0");
+        header.put("Accept", "	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        header.put("Accept-Language", "zh-cn,zh;q=0.5");
+        header.put("Accept-Charset", "	GB2312,utf-8;q=0.7,*;q=0.7");
+        //Cookie: SERVERID=131; JSESSIONID=B6E9BEB557F1DA10598A92DCFA936DA5
+        header.put("Cookie", "SERVERID=131; JSESSIONID=B6E9BEB557F1DA10598A92DCFA936DA5");
+        header.put("Connection", "keep-alive");
+        Connection data = connect.data(header);
+        Document document = data.get();
 
-
+        return document.html();
+/*
         Connection loginConn_ = Jsoup.connect(loginUrl);
         for (int i = 0; i < 100; i++) {
 
             System.out.println(cookies);
         }
-
+*/
         //login using cookies
        /* Cookie cookie1 = new Cookie(sessionName, sessionValue);
         cookie1.setPath("/jsxsd/");
         cookie1.setDomain("jwgl.bupt.edu.cn");
         cookie1.isHttpOnly();*/
-        loginConn_.cookie(SERVERID,  SERVERIDValue);
+
+
+       /*loginConn_.cookie(SERVERID,  SERVERIDValue);
         loginConn_.cookie(qqmail_alias,  qqmail_aliasValue);
         loginConn_.cookie(sessionName,  sessionValue);
         //login parameters
         loginConn_.data(reqData);
 
-        //try to login
-        loginConn_.execute();
         //获取课表
-        /*Connection getTableiConn = Jsoup.connect(getTableBaseURL);
+        Connection getTableiConn = Jsoup.connect(getTableBaseURL);
 
         getTableiConn.cookie(SERVERID,  SERVERIDValue);
         getTableiConn.cookie(qqmail_alias,  qqmail_aliasValue);
-        getTableiConn.cookie(sessionName,  sessionValue);*/
+        getTableiConn.cookie(sessionName,  sessionValue);
         Connection.Response getTableResponse = loginConn_.execute();
-        return getTableResponse.body();
+        return getTableResponse.body();*/
         //。。。未完，看下面分析
+        /*try {
+            return sendPostByCookie(loginUrl,reqData,cookies);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+
+
+
+
     }
 
     // download verifyCode image from 'srcUrl' and save to 'dest' at localhost
@@ -926,7 +956,7 @@ public class MainController {
         //时间戳
         HttpClient client = new HttpClient();
         //post请求方式
-        GetMethod getMethod= new GetMethod(srcUrl);
+        GetMethod getMethod = new GetMethod(srcUrl);
         /*PostMethod postMethod = new PostMethod(srcUrl);
         //推荐的数据存储方式,类似key-value形式
        NameValuePair telPair = new NameValuePair();
@@ -939,7 +969,9 @@ public class MainController {
         //因为这个网站会将账号密码转为json格式,所以需要这一步
         postMethod.setRequestHeader("Content_Type","application/json");
         //执行请求*/
-        getMethod.setRequestHeader("Content_Type","application/json");
+        getMethod.setRequestHeader("Content_Type", "application/json");
+        getMethod.setRequestHeader("SetCoo", "application/json");
+
         client.executeMethod(getMethod);
         //通过Post/GetMethod对象获取响应头信息
         /*String cookie = postMethod.getResponseHeader("Set-Cookie").getValue();
@@ -948,7 +980,26 @@ public class MainController {
         String[] splitPwd = sub.split("=");
         String pwd = splitPwd[1];
         System.out.println(pwd);*/
-        Header header =getMethod.getResponseHeader("Set-Cookie");
+        Header header = getMethod.getResponseHeader("Set-Cookie");
+    }
 
-
+    public static String sendPostByCookie(String url, Map<String, String> body, Map<String, String> cookies) throws Exception {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader("Content-Type", "application/json");
+        //写入cookie
+        httpPost.addHeader(HttpHeaders.COOKIE, sessionName +"="+"7C85384608AA36D751F106B2C174E9AF");
+        //写入body
+        httpPost.setEntity(new StringEntity("encoded", Consts.UTF_8));
+        //执行请求
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        System.out.println(response.toString());
+        HttpEntity entity = response.getEntity();
+        String responseContent = EntityUtils.toString(entity, Consts.UTF_8);
+        response.close();
+        httpClient.close();
+        return responseContent;
+    }
 }
+
+
