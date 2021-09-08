@@ -95,7 +95,7 @@ public class BlogDaoImpl implements IBlogDao {
                 long c1=o1.getCount()*centPerLike;
                 long c2=o2.getCount()*centPerLike;
                 // 除1000除60得到分钟数，进行一定的加权得到热度值hot
-                return (int) -((t1-t2)*0.3/1000/60+(c1-c2)*0.7);
+                return (int) -((t1-t2)*0.1/1000/60+(c1-c2)*0.9);
             }
         });
         return blogList;
@@ -118,7 +118,7 @@ public class BlogDaoImpl implements IBlogDao {
                 int centPerLike = 144;
                 long c1=o1.getCount()*centPerLike;
                 long c2=o2.getCount()*centPerLike;
-                return (int) -((t1-t2)*0.3/1000/60+(c1-c2)*0.7);
+                return (int) -((t1-t2)*0.1/1000/60+(c1-c2)*0.9);
             }
         });
         return blogList;

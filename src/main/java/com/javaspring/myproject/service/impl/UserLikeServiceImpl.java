@@ -12,6 +12,12 @@ import javax.jws.soap.SOAPBinding;
 public class UserLikeServiceImpl implements IUserLikeService {
     @Autowired
     private IUserLikeDao userLikeDao;
+
+    @Override
+    public UserLike find(UserLike userLike) {
+        return userLikeDao.find(userLike.getBlogid(),userLike.getUsername());
+    }
+
     @Override
     public boolean giveALike(UserLike userLike) {
         return userLikeDao.like(userLike);

@@ -67,9 +67,8 @@ public class MainController {
     @Autowired
     private IFileService fileService;
     @Autowired
-
     private IUserLikeService userLikeService;
-
+    @Autowired
     private IRecordService recordService;
 
 
@@ -140,30 +139,6 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
     }
 
-    /*
-     * 发送修改信息时进行安全验证邮箱
-     * 路径 /api/sendVerificationEmail
-     * 传参(json) email
-     * 返回值(json--Result) code,message,data
-     * */
-    @CrossOrigin
-    @PostMapping(value = "/api/sendVerificationEmail")
-    @ResponseBody
-    public Result sendVerificationEmail(@Valid @RequestBody UserVo userVo,HttpSession httpSession) {
-        //邮箱是唯一的，故通过当前邮箱确认待修改对象是否存在
-        User user = userService.getUserByEmail(userVo.getEmail());
-        if(user==null)
-        {
-            return ResultFactory.buildFailResult("该邮箱未注册! ");
-        }
-        else {
-            if (!EMailService.sendMimeMail(user.getEmail(), httpSession)) {
-                String message = String.format("发送邮箱失败！");
-                return ResultFactory.buildFailResult(message);
-            }
-            return ResultFactory.buildSuccessResult("已发送验证码至邮箱！");
-        }
-    }
 
 
     /*
@@ -213,7 +188,7 @@ public class MainController {
     @CrossOrigin
     @PostMapping(value = "/api/changePassword")
     @ResponseBody
-    public Result fhangePassword(@Valid @RequestBody UserVo userVo){
+    public Result changePassword(@Valid @RequestBody UserVo userVo){
         if(!EMailService.changePassword(userVo.getEmail(),userVo.getPassword(),userVo.getNewPassword(),userVo.getNewPasswordRepeat())){
             String message=String.format("信息有误,修改失败！");
             return ResultFactory.buildFailResult(message);
@@ -343,6 +318,9 @@ public class MainController {
 
         Map<String,Object> map=new HashMap<>();
         File file1=fileService.getFile(file);
+        if(file1==null){
+            return null;
+        }
         map.put("filename",file1.getFilename());
         map.put("username",file1.getUsername());
         map.put("url",file1.getUrl());
@@ -366,6 +344,9 @@ public class MainController {
     @ResponseBody
     public String getAllFiles(@Valid @RequestBody File file) {
         List<File> fileList=fileService.getAllFiles(file);
+        if(fileList==null){
+            return null;
+        }
         List<Map<String,Object>> maplist=new ArrayList<>();
         for (int i = 0; i < fileList.size(); i++) {
             Map<String,Object> map=new HashMap<>();
@@ -439,6 +420,9 @@ public class MainController {
     @ResponseBody
     public String getBlog(@Valid @RequestBody Blog blog) {
         Blog blog1=blogService.getBlog(blog);
+        if(blog1==null){
+            return null;
+        }
         Map<String,Object> map=new HashMap<>();
 
         map.put("blogid",blog1.getBlogid());
@@ -447,6 +431,7 @@ public class MainController {
         map.put("title",blog1.getTitle());
         map.put("content",blog1.getContent());
         map.put("picture",blog1.getPicture());
+        map.put("count",blog1.getCount());
         map.put("visible",blog1.getVisible());
         return JSON.toJSONString(map);
     }
@@ -463,6 +448,9 @@ public class MainController {
     @ResponseBody
     public String getAllBlogs(@Valid @RequestBody Blog blog) {
         List<Blog> bloglist=blogService.getAllBlogs(blog);
+        if(bloglist==null){
+            return null;
+        }
         List<Map<String,Object>> maplist=new ArrayList<>();
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
@@ -485,18 +473,26 @@ public class MainController {
     /*
      * 获取公开的所有人blogs
      * 路径 /api/getPublicBlogs
-     * 传参   null
-     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
+     * 传参   username
+     * 返回值(json) blogid,username,time_,title,content,picture,count,isliked
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getPublicBlogs")
     @ResponseBody
-    public String getPublicBlogs() {
+    public String getPublicBlogs(@RequestBody Blog blog) {
         List<Blog> bloglist=blogService.getPublicBlogs();
         List<Map<String,Object>> maplist=new ArrayList<>();
+        if(bloglist==null){
+            return null;
+        }
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
-
+            Object object=userLikeService.find(new UserLike(bloglist.get(i).getBlogid(),blog.getUsername()));
+            if(object!=null){
+                map.put("isLiked","1");
+            }else {
+                map.put("isLiked","0");
+            }
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
@@ -513,7 +509,7 @@ public class MainController {
      * 以热度顺序获取blogs
      * 路径 /api/getAllHotBlogs
      * 传参(json):username
-     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible,isliked
      * 功能：以热度从高到低的顺序浏览自己的博客
      * */
     @CrossOrigin
@@ -522,9 +518,11 @@ public class MainController {
     public String getAllHotBlogs(@Valid @RequestBody Blog blog) {
         List<Blog> bloglist=blogService.getAllHotBlogs(blog);
         List<Map<String,Object>> maplist=new ArrayList<>();
+        if(bloglist==null){
+            return null;
+        }
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
-
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
@@ -542,19 +540,26 @@ public class MainController {
     /*
      * 以热度顺序获取公开的blogs
      * 路径 /api/getPublicHotBlogs
-     * 传参: null
-     * 返回值(json) blogid,username,time_,title,content,picture,count,visible
+     * 传参: username
+     * 返回值(json) blogid,username,time_,title,content,picture,count,visible,isliked
      * 功能：以热度从高到低的顺序浏览公开的博客
      * */
     @CrossOrigin
     @PostMapping(value ="/api/getPublicHotBlogs")
     @ResponseBody
-    public String getPublicHotBlogs() {
+    public String getPublicHotBlogs(@RequestBody Blog blog) {
         List<Blog> bloglist=blogService.getPublicHotBlogs();
         List<Map<String,Object>> maplist=new ArrayList<>();
+        if(bloglist==null){
+            return null;
+        }
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
-
+            if(userLikeService.find(new UserLike(bloglist.get(i).getBlogid(),blog.getUsername()))!=null){
+                map.put("isLiked","1");
+            }else {
+                map.put("isLiked","0");
+            }
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
@@ -626,7 +631,20 @@ public class MainController {
             String message = String.format("系统繁忙，请稍后");
         }
     }
-
+    /*
+     * 点赞查询
+     * 路径 /api/findALike
+     * 传参(json):username, blogid，type（当前只支持type为1且默认为1，故此参数不用添加）
+     * 返回值(json):username, blogid，type（为null代表无点赞记录)
+     * 功能：查找user是否给博客点赞
+     * */
+    @CrossOrigin
+    @PostMapping(value ="/api/findALike")
+    @ResponseBody
+    public UserLike findALike(@Valid @RequestBody UserLike userLike)
+    {
+        return userLikeService.find(userLike);
+    }
 
 
 
@@ -645,7 +663,10 @@ public class MainController {
     public Result recordUpload(@Valid @RequestBody Record record){
         recordService.insertRecord(record);
         Record record1=recordService.getRecordin(record);
-        if(record1.getContext().equals(record.getContext())){
+        if(record1==null){
+            return ResultFactory.buildFailResult("插入记录失败！");
+        }
+        else if(record1.getContext().equals(record.getContext())){
             return ResultFactory.buildSuccessResult("插入记录成功！");
         }
         return ResultFactory.buildFailResult("插入记录失败！");
@@ -700,6 +721,9 @@ public class MainController {
     @ResponseBody
     public String recordGet(@Valid @RequestBody Record record){
         List<Record> Recordlist= recordService.getRecord(record);
+        if(Recordlist==null){
+            return null;
+        }
         List<Map<String,Object>> mapList=new ArrayList<>();
         for(int i=0;i<Recordlist.size();i++){
             Map<String,Object> map=new HashMap<>();
@@ -764,7 +788,7 @@ public class MainController {
 
     //file request parameters
     static String userAccount = "2019211996";        //你的账号
-    static String userPassword = "JYX014524jyx";          //你的密码
+    static String userPassword = "xxxxxxxx";          //你的密码
     static String RANDOMCODE = "";            //验证码默认设置为空，后续通过用户的输入来填充这个值
 
     //验证码请求地址

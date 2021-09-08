@@ -28,7 +28,6 @@ public class UserLikeDaoImpl implements IUserLikeDao {
 
     @Override
     public boolean like(UserLike userLike) {
-        System.out.println(userLike.getBlogid()+userLike.getUsername());
         UserLike existingUserLike = find(userLike.getBlogid(),userLike.getUsername());
         int num=0;
         if(existingUserLike == null)

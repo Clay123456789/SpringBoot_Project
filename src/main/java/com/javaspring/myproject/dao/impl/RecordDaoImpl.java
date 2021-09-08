@@ -44,9 +44,14 @@ public class RecordDaoImpl implements IRecordDao {
 
         String sql = "select * from record where username=? order by date_";
         RowMapper<Record> rowMapper = new BeanPropertyRowMapper<Record>(Record.class);
-        List<Record> recordList = jdbcTemplate.query(sql, rowMapper, record.getUsername());
+        Object recordList=null;
+        try{
+           recordList = jdbcTemplate.query(sql, rowMapper, record.getUsername());
+        }catch (EmptyResultDataAccessException e){
+            return null;
+        }
+        return (List<Record>)recordList;
 
-        return recordList;
     }
 
     @Override

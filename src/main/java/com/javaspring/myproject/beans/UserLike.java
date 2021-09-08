@@ -14,6 +14,13 @@ public class UserLike {
     }
     public int getType() {return type;}
 
+    public UserLike() {
+    }
+
+    public UserLike(String blogid, String username) {
+        this.blogid = blogid;
+        this.username = username;
+    }
 
     public void setBlogid(String blogid) {
         this.blogid = blogid;
