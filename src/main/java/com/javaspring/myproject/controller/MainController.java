@@ -206,7 +206,6 @@ public class MainController {
     @PostMapping(value ="/api/getUserTouxiang")
     @ResponseBody
     public String getUserTouxiang(@Valid @RequestBody User user){
-        System.out.println(userService.getUserTouxiang(user.getUsername()));
         return userService.getUserTouxiang(user.getUsername());
     }
     /*
@@ -493,6 +492,7 @@ public class MainController {
             }else {
                 map.put("isLiked","0");
             }
+            map.put("touxiang",userService.getUserTouxiang(bloglist.get(i).getUsername()));
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
@@ -523,6 +523,7 @@ public class MainController {
         }
         for (int i = 0; i < bloglist.size(); i++) {
             Map<String,Object> map=new HashMap<>();
+
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
@@ -560,6 +561,8 @@ public class MainController {
             }else {
                 map.put("isLiked","0");
             }
+
+            map.put("touxiang",userService.getUserTouxiang(bloglist.get(i).getUsername()));
             map.put("blogid",bloglist.get(i).getBlogid());
             map.put("username",bloglist.get(i).getUsername());
             map.put("time_",bloglist.get(i).getTime_());
