@@ -618,6 +618,7 @@ public class MainController {
         return ResultFactory.buildSuccessResult("已成功修改blog信息！");
     }
 
+
     /*
      * 点赞逻辑
      * 路径 /api/giveALike
@@ -664,15 +665,19 @@ public class MainController {
     @PostMapping(value="/api/recordUpload")
     @ResponseBody
     public Result recordUpload(@Valid @RequestBody Record record){
-        recordService.insertRecord(record);
-        Record record1=recordService.getRecordin(record);
-        if(record1==null){
+        if(recordService.getRecordin(record)==null) {
+            recordService.insertRecord(record);
+            Record record1 = recordService.getRecordin(record);
+            if (record1 == null) {
+                return ResultFactory.buildFailResult("插入记录失败！");
+            } else if (record1.getContext().equals(record.getContext())) {
+                return ResultFactory.buildSuccessResult("插入记录成功！");
+            }
             return ResultFactory.buildFailResult("插入记录失败！");
         }
-        else if(record1.getContext().equals(record.getContext())){
-            return ResultFactory.buildSuccessResult("插入记录成功！");
+        else{
+            return recordUpdate(record);
         }
-        return ResultFactory.buildFailResult("插入记录失败！");
     }
 
     /*
