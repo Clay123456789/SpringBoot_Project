@@ -20,8 +20,6 @@ public class UserDaoImpl implements IUserDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-
-
     //理论上所有用username锁定对象的函数都可以使用email，但数据库的主键为username，故推荐使用username
     @Override
     public int insertUser(User user) {
